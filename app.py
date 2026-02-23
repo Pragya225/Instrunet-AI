@@ -144,15 +144,7 @@ section[data-testid="stSidebar"]{{display:none!important;}}
 [data-testid="stAppViewContainer"],[data-testid="stMain"]{{background:var(--bg)!important;}}
 
 /* ── AUTH WRAPPER ── */
-.auth-page{{
-  min-height:100vh;background:{lbg};
-  display:flex;align-items:center;justify-content:center;
-  padding:2rem;position:relative;overflow:hidden;
-}}
-.auth-page::before{{
-  content:'';position:absolute;inset:0;pointer-events:none;
-  background:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='1.5' fill='%23ffffff' fill-opacity='0.04'/%3E%3C/svg%3E");
-}}
+/* auth page — background set inline on wrapper div */
 .orb{{position:absolute;border-radius:50%;filter:blur(90px);opacity:.28;pointer-events:none;animation:drift 14s ease-in-out infinite alternate;}}
 .orb1{{width:380px;height:380px;background:#7c6af7;top:-110px;left:-80px;animation-delay:0s;}}
 .orb2{{width:260px;height:260px;background:#a855f7;bottom:-70px;right:-50px;animation-delay:-5s;}}
@@ -330,72 +322,96 @@ def render_auth(dark: bool):
     text   = '#e4e4f0' if dark else '#111118'
     muted  = '#64648a' if dark else '#9090aa'
     accent = '#7c6af7' if dark else '#5b50e8'
-    accent2= '#a78bfa' if dark else '#764ba2'
     lcrd   = '#13131d' if dark else '#ffffff'
     lbrd   = '#25253a' if dark else '#e2e2ee'
+    lbg    = ('radial-gradient(ellipse at 25% 25%,#1e1b4b,#0d0d14 55%,#1a0d2e)'
+              if dark else
+              'radial-gradient(ellipse at 25% 25%,#667eea,#4f46e5 40%,#764ba2)')
 
-    # floating orb background
-    st.markdown("""
-<div class="auth-page">
+    # Inject full-page background + orbs via CSS on body/stApp
+    st.markdown(f"""
+<style>
+[data-testid="stAppViewContainer"] {{
+    background: {lbg} !important;
+    min-height: 100vh;
+}}
+[data-testid="stMain"] {{ background: transparent !important; }}
+[data-testid="stHeader"] {{ background: transparent !important; }}
+</style>
+<div style="position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden">
   <div class="orb orb1"></div>
   <div class="orb orb2"></div>
   <div class="orb orb3"></div>
-</div>""", unsafe_allow_html=True)
+</div>
+""", unsafe_allow_html=True)
 
-    _, mid, _ = st.columns([1, 1.05, 1])
+    # ── LOGO (centered via columns) ──
+    _, mid, _ = st.columns([1, 1.4, 1])
     with mid:
-        # Brand logo
         st.markdown(f"""
-<div class="auth-logo">
-  <div class="auth-logo-icon">🎵</div>
-  <h1 class="auth-brand">InstruNet <span>AI</span></h1>
-  <p class="auth-tag">AI Music Instrument Recognition</p>
-</div>""", unsafe_allow_html=True)
+<div style="text-align:center;padding:2rem 0 1rem;position:relative;z-index:1">
+  <div style="display:inline-flex;align-items:center;justify-content:center;
+              width:66px;height:66px;border-radius:1.2rem;font-size:1.85rem;
+              background:linear-gradient(135deg,{accent},#a78bfa);
+              box-shadow:0 8px 28px {accent}55;margin-bottom:.85rem">🎵</div>
+  <h1 style="font-family:'Syne',sans-serif;font-size:1.75rem;font-weight:800;
+             color:{text};letter-spacing:-.04em;margin:0">
+    InstruNet <span style="color:{accent}">AI</span>
+  </h1>
+  <p style="font-size:.71rem;color:{muted};margin:.32rem 0 0;font-weight:500;
+            text-transform:uppercase;letter-spacing:.08em">
+    AI Music Instrument Recognition
+  </p>
+</div>
+""", unsafe_allow_html=True)
 
-        # Card wrapper open
+    # ── CARD (centered via columns) ──
+    _, mid, _ = st.columns([1, 1.4, 1])
+    with mid:
         st.markdown(f"""
-<div class="auth-card" style="background:{lcrd};border:1px solid {lbrd}">""",
-            unsafe_allow_html=True)
+<div style="background:{lcrd};border:1px solid {lbrd};border-radius:1.5rem;
+            padding:2rem 2rem 1.5rem;
+            box-shadow:0 28px 90px rgba(0,0,0,.35);
+            position:relative;z-index:1;margin-bottom:.5rem">
+""", unsafe_allow_html=True)
 
         # ── TAB SWITCHER ──
         active_login = st.session_state.auth_page == 'login'
-        c1, c2 = st.columns(2)
-        with c1:
-            if st.button("🔑  Sign In",
-                         key="tab_login",
-                         use_container_width=True,
+        t1, t2 = st.columns(2)
+        with t1:
+            if st.button("🔑  Sign In", key="tab_login", use_container_width=True,
                          type="primary" if active_login else "secondary"):
-                st.session_state.auth_page = 'login'
-                st.rerun()
-        with c2:
-            if st.button("✨  Create Account",
-                         key="tab_reg",
-                         use_container_width=True,
+                st.session_state.auth_page = 'login'; st.rerun()
+        with t2:
+            if st.button("✨  Register", key="tab_reg", use_container_width=True,
                          type="primary" if not active_login else "secondary"):
-                st.session_state.auth_page = 'register'
-                st.rerun()
+                st.session_state.auth_page = 'register'; st.rerun()
 
-        st.markdown("<hr style='border:none;border-top:1px solid var(--border);margin:.5rem 0 1.2rem'>",
+        st.markdown("<hr style='border:none;border-top:1px solid var(--border);margin:.75rem 0 1rem'>",
                     unsafe_allow_html=True)
 
-        # ── LOGIN FORM ──
+        # ── LOGIN ──
         if st.session_state.auth_page == 'login':
             st.markdown(f"""
-<p style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:{text};margin:0 0 .2rem">
-  Welcome back 👋
-</p>
-<p style="font-size:.79rem;color:{muted};margin:0 0 1.2rem">
-  Sign in to your InstruNet AI account
-</p>""", unsafe_allow_html=True)
+<p style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;
+          color:{text};margin:0 0 .15rem">Welcome back 👋</p>
+<p style="font-size:.79rem;color:{muted};margin:0 0 1rem">
+  Sign in to your InstruNet AI account</p>
+""", unsafe_allow_html=True)
 
             auth, config = get_authenticator()
 
-            # v0.4.x — login() renders the widget and returns (name, auth_status, username)
-            name, auth_status, username = auth.login(
-                fields={'Form name': 'Sign In', 'Username': 'Username',
-                        'Password': 'Password', 'Login': 'Sign In'},
+            login_result = auth.login(
+                fields={'Form name':'Sign In','Username':'Username',
+                        'Password':'Password','Login':'Sign In'},
                 key='login_widget'
             )
+
+            # Safely handle None (returned before user submits)
+            if isinstance(login_result, tuple) and len(login_result) == 3:
+                name, auth_status, username = login_result
+            else:
+                name, auth_status, username = None, None, None
 
             if auth_status is True:
                 st.session_state.auth_status   = True
@@ -403,56 +419,38 @@ def render_auth(dark: bool):
                 st.session_state.auth_username = username
                 save_config(config)
                 st.rerun()
-
             elif auth_status is False:
-                st.markdown(f'''
-<div style="background:{"#1f0808" if dark else "#fff1f1"};border:1px solid {"#7f1d1d" if dark else "#fca5a5"};
-     border-radius:.75rem;padding:.65rem 1rem;color:{"#fca5a5" if dark else "#dc2626"};
-     font-size:.82rem;font-weight:500;margin-top:.5rem;display:flex;align-items:center;gap:.45rem">
-  ⚠️ Incorrect username or password. Please try again.
-</div>''', unsafe_allow_html=True)
-
-            elif auth_status is None:
-                st.markdown(f'''
-<p style="font-size:.75rem;color:{muted};text-align:center;margin-top:.5rem">
-  Enter your credentials above to sign in.
-</p>''', unsafe_allow_html=True)
+                st.error("⚠️ Incorrect username or password.")
 
             st.markdown(f"""
-<p style="text-align:center;font-size:.73rem;color:{muted};margin-top:1.2rem">
-  Don't have an account? &nbsp;
-  <span style="color:{accent};cursor:pointer;font-weight:600">Click "Create Account" above</span>
-</p>""", unsafe_allow_html=True)
+<p style="text-align:center;font-size:.73rem;color:{muted};margin-top:.75rem">
+  No account? Click <b>Register</b> above.</p>
+""", unsafe_allow_html=True)
 
-        # ── REGISTER FORM ──
+        # ── REGISTER ──
         else:
             st.markdown(f"""
-<p style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:{text};margin:0 0 .2rem">
-  Create your account ✨
-</p>
-<p style="font-size:.79rem;color:{muted};margin:0 0 1.2rem">
-  Sign up to start using InstruNet AI
-</p>""", unsafe_allow_html=True)
+<p style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;
+          color:{text};margin:0 0 .15rem">Create your account ✨</p>
+<p style="font-size:.79rem;color:{muted};margin:0 0 1rem">
+  Sign up to start using InstruNet AI</p>
+""", unsafe_allow_html=True)
 
-            new_name  = st.text_input("Full Name",     placeholder="e.g. Alex Johnson",   key="reg_name")
-            new_user  = st.text_input("Username",      placeholder="e.g. alexj",           key="reg_user")
-            new_email = st.text_input("Email",         placeholder="you@example.com",      key="reg_email")
-            new_pass  = st.text_input("Password",      placeholder="Min. 6 characters",    type="password", key="reg_pass")
+            new_name  = st.text_input("Full Name",        placeholder="e.g. Alex Johnson", key="reg_name")
+            new_user  = st.text_input("Username",         placeholder="e.g. alexj",        key="reg_user")
+            new_email = st.text_input("Email",            placeholder="you@example.com",   key="reg_email")
+            new_pass  = st.text_input("Password",         placeholder="Min. 6 characters", type="password", key="reg_pass")
             new_pass2 = st.text_input("Confirm Password", placeholder="Repeat password",   type="password", key="reg_pass2")
 
-            st.markdown("<div style='height:.3rem'></div>", unsafe_allow_html=True)
-
             if st.button("Create Account →", use_container_width=True, key="reg_submit"):
-                # ── VALIDATION ──
-                config  = load_config()
-                users   = config["credentials"]["usernames"]
-                err     = None
-
+                config = load_config()
+                users  = config["credentials"]["usernames"]
+                err    = None
                 if not all([new_name, new_user, new_email, new_pass, new_pass2]):
                     err = "Please fill in all fields."
                 elif new_user in users:
-                    err = f"Username '{new_user}' is already taken. Please choose another."
-                elif any(u['email'] == new_email for u in users.values()):
+                    err = f"Username '{new_user}' is already taken."
+                elif any(u.get('email') == new_email for u in users.values()):
                     err = "An account with this email already exists."
                 elif len(new_pass) < 6:
                     err = "Password must be at least 6 characters."
@@ -460,37 +458,25 @@ def render_auth(dark: bool):
                     err = "Passwords do not match."
 
                 if err:
-                    st.markdown(f"""
-<div style="background:{"#1f0808" if dark else "#fff1f1"};border:1px solid {"#7f1d1d" if dark else "#fca5a5"};
-     border-radius:.75rem;padding:.65rem 1rem;color:{"#fca5a5" if dark else "#dc2626"};
-     font-size:.82rem;font-weight:500;margin-top:.5rem;display:flex;align-items:center;gap:.45rem">
-  ⚠️ {err}
-</div>""", unsafe_allow_html=True)
+                    st.error(f"⚠️ {err}")
                 else:
-                    # Hash password and save
                     hashed = hash_password(new_pass)
                     config["credentials"]["usernames"][new_user] = {
-                        "name":                  new_name,
-                        "email":                 new_email,
-                        "password":              hashed,
-                        "failed_login_attempts": 0,
-                        "logged_in":             False
+                        "name": new_name, "email": new_email,
+                        "password": hashed, "failed_login_attempts": 0, "logged_in": False
                     }
                     save_config(config)
-                    st.success("✅ Account created! Switch to Sign In to log in.")
+                    st.success("✅ Account created! Click Sign In to log in.")
                     st.balloons()
 
             st.markdown(f"""
-<p style="text-align:center;font-size:.73rem;color:{muted};margin-top:1rem">
-  Already have an account? &nbsp;
-  <span style="color:{accent};cursor:pointer;font-weight:600">Click "Sign In" above</span>
-</p>""", unsafe_allow_html=True)
+<p style="text-align:center;font-size:.73rem;color:{muted};margin-top:.75rem">
+  Have an account? Click <b>Sign In</b> above.</p>
+""", unsafe_allow_html=True)
 
-        # Card close
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # Theme toggle
-    st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
+    # ── THEME TOGGLE ──
     _, tc, _ = st.columns([4, 1.5, 4])
     with tc:
         if st.button("☀️ Light" if dark else "🌙 Dark", key="auth_theme"):
@@ -498,8 +484,10 @@ def render_auth(dark: bool):
             st.rerun()
 
     st.markdown(f"""
-<p style="text-align:center;font-size:.72rem;color:{"rgba(255,255,255,.3)" if dark else "rgba(255,255,255,.5)"};
-   margin-top:.5rem">🔒 Passwords are bcrypt-hashed · InstruNet AI © 2026</p>
+<p style="text-align:center;font-size:.72rem;margin-top:.5rem;
+   color:rgba(255,255,255,.3)">
+  🔒 Passwords are bcrypt-hashed · InstruNet AI © 2026
+</p>
 """, unsafe_allow_html=True)
 
 
