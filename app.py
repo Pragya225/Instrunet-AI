@@ -26,7 +26,7 @@ CONDITION_LABELS = ['modern', 'clean', 'noisy', 'vintage']
 
 CONFIG_FILE = "auth_config.yaml"
 
-def load_config():
+def load_config() -> dict:
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE) as f:
             return yaml.load(f, Loader=SafeLoader)
@@ -37,21 +37,24 @@ def load_config():
     config = {
         "credentials": {"usernames": {}},
         "cookie": {
-            "name": "instrunet_auth",
-            "key": st.secrets.get("COOKIE_KEY", "instrunet_super_secret_key_2026"),
+            "name":     "instrunet_auth",
+            "key":      st.secrets.get("COOKIE_KEY", "instrunet_super_secret_key_2026"),
             "expiry_days": 30
         },
         "pre-authorized": {"emails": []}
     }
     for uname, hpw in seed_users.items():
         config["credentials"]["usernames"][uname] = {
-            "name": uname.capitalize(), "email": f"{uname}@instrunet.ai",
-            "password": hpw, "failed_login_attempts": 0, "logged_in": False
+            "name": uname.capitalize(),
+            "email": f"{uname}@instrunet.ai",
+            "password": hpw,
+            "failed_login_attempts": 0,
+            "logged_in": False
         }
     save_config(config)
     return config
 
-def save_config(config):
+def save_config(config: dict):
     with open(CONFIG_FILE, "w") as f:
         yaml.dump(config, f, default_flow_style=False)
 
@@ -79,350 +82,577 @@ def get_icon(name):
         if k in n: return v
     return '🎵'
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# REDESIGNED CSS — Clean, Editorial, Professional
+# ─────────────────────────────────────────────────────────────────────────────
+def inject_css():
+    st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Fraunces:ital,wght@0,300;0,600;1,300&display=swap');
+
+/* ── RESET & BASE ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+#MainMenu, footer, header { visibility: hidden; }
+section[data-testid="stSidebar"] { display: none !important; }
+.block-container { padding: 0 !important; max-width: 100% !important; }
+
+[data-testid="stAppViewContainer"],
+[data-testid="stMain"] {
+    background: #F6F5F1 !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+
+/* ── COLOR TOKENS ── */
+:root {
+    --ink:       #1A1917;
+    --ink-2:     #4A4845;
+    --ink-3:     #9A9793;
+    --rule:      #E2E0DB;
+    --rule-2:    #D0CEC8;
+    --surface:   #FFFFFF;
+    --surface-2: #F6F5F1;
+    --surface-3: #EDECEA;
+    --accent:    #2C5282;
+    --accent-lt: #EBF2FF;
+    --green:     #1A6B4A;
+    --green-lt:  #E6F4EE;
+    --amber:     #92500A;
+    --amber-lt:  #FEF3E2;
+    --red:       #9B1C1C;
+    --red-lt:    #FEF2F2;
+    --purple:    #5B21B6;
+    --purple-lt: #F3EEFF;
+    --radius:    10px;
+    --radius-lg: 16px;
+    --shadow:    0 1px 3px rgba(26,25,23,.07), 0 4px 12px rgba(26,25,23,.05);
+    --shadow-lg: 0 2px 8px rgba(26,25,23,.08), 0 12px 32px rgba(26,25,23,.08);
+}
+
+/* ── ALL TEXT ── */
+* { font-family: 'Plus Jakarta Sans', sans-serif !important; color: var(--ink); }
+
+/* ── STREAMLIT WIDGET OVERRIDES ── */
+.stTextInput > div > div > input {
+    background: var(--surface) !important;
+    border: 1.5px solid var(--rule-2) !important;
+    border-radius: var(--radius) !important;
+    color: var(--ink) !important;
+    font-size: 0.9rem !important;
+    padding: 0.65rem 0.9rem !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    transition: border-color 0.15s, box-shadow 0.15s !important;
+}
+.stTextInput > div > div > input:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(44,82,130,0.12) !important;
+    outline: none !important;
+}
+.stTextInput label {
+    color: var(--ink-2) !important;
+    font-weight: 600 !important;
+    font-size: 0.8rem !important;
+    letter-spacing: 0.02em !important;
+    text-transform: uppercase !important;
+}
+.stCheckbox label { color: var(--ink-2) !important; font-size: 0.88rem !important; font-weight: 500 !important; }
+
+[data-testid="stFileUploadDropzone"] {
+    border: 2px dashed var(--rule-2) !important;
+    border-radius: var(--radius-lg) !important;
+    background: var(--surface-2) !important;
+    transition: all 0.2s !important;
+}
+[data-testid="stFileUploadDropzone"]:hover {
+    border-color: var(--accent) !important;
+    background: var(--accent-lt) !important;
+}
+[data-testid="stFileUploadDropzone"] label,
+[data-testid="stFileUploadDropzone"] p,
+[data-testid="stFileUploadDropzone"] span {
+    color: var(--ink-3) !important;
+    font-weight: 500 !important;
+}
+
+.stButton > button {
+    background: var(--ink) !important;
+    color: #F6F5F1 !important;
+    font-weight: 600 !important;
+    font-size: 0.88rem !important;
+    border-radius: 9999px !important;
+    border: none !important;
+    padding: 0.7rem 2rem !important;
+    letter-spacing: 0.01em !important;
+    transition: background 0.15s, transform 0.1s !important;
+}
+.stButton > button:hover {
+    background: #2D2C2A !important;
+    transform: translateY(-1px) !important;
+}
+.stButton > button:disabled {
+    background: var(--rule) !important;
+    color: var(--ink-3) !important;
+    transform: none !important;
+}
+
+.stDownloadButton > button {
+    border-radius: var(--radius) !important;
+    font-weight: 600 !important;
+    padding: 0.6rem 1.2rem !important;
+    border: 1.5px solid var(--rule-2) !important;
+    background: var(--surface) !important;
+    color: var(--ink) !important;
+    transition: all 0.15s !important;
+    font-size: 0.85rem !important;
+}
+.stDownloadButton > button:hover {
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+    background: var(--accent-lt) !important;
+}
+
+.stSpinner > div { border-top-color: var(--accent) !important; }
+.stAlert { border-radius: var(--radius) !important; }
+audio { border-radius: var(--radius); width: 100%; margin-top: 0.5rem; }
+
+/* ── AUTH PAGE STYLES ── */
+.auth-page-bg {
+    min-height: 100vh;
+    background: var(--surface-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.auth-grid-bg {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image:
+        linear-gradient(var(--rule) 1px, transparent 1px),
+        linear-gradient(90deg, var(--rule) 1px, transparent 1px);
+    background-size: 48px 48px;
+    opacity: 0.6;
+}
+.auth-accent-blob {
+    position: fixed; pointer-events: none;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(44,82,130,0.07) 0%, transparent 70%);
+    top: -100px; right: -100px;
+}
+
+/* ── MAIN APP LAYOUT ── */
+.app-topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--rule);
+    padding: 0.8rem 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.app-brand {
+    font-family: 'Fraunces', serif !important;
+    font-size: 1.35rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+}
+.app-brand span { color: var(--accent); }
+
+.app-hero {
+    background: var(--ink);
+    color: #F6F5F1;
+    padding: 3.5rem 2.5rem 3rem;
+    position: relative;
+    overflow: hidden;
+}
+.app-hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 350px; height: 350px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.06);
+}
+.app-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; right: 120px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.04);
+}
+.app-hero h1 {
+    font-family: 'Fraunces', serif !important;
+    font-size: 3rem;
+    font-weight: 300;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+    color: #F6F5F1;
+    margin-bottom: 0.75rem;
+}
+.app-hero h1 em {
+    font-style: italic;
+    color: rgba(246,245,241,0.5);
+}
+.app-hero p {
+    font-size: 0.9rem;
+    color: rgba(246,245,241,0.55);
+    font-weight: 400;
+    margin-bottom: 1.25rem;
+}
+.app-hero-pills {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+.app-hero-pill {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 9999px;
+    padding: 0.22rem 0.75rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: rgba(246,245,241,0.75);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.app-content { padding: 2rem 2.5rem; }
+.app-section-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 0.75rem;
+}
+
+/* ── CARD COMPONENT ── */
+.card {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow);
+}
+.card-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--rule);
+}
+
+/* ── RESULT HERO CARD ── */
+.result-hero {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow-lg);
+}
+.result-hero-banner {
+    background: var(--ink);
+    padding: 2rem 2rem 1.75rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+.result-hero-icon {
+    font-size: 3rem;
+    line-height: 1;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    width: 72px; height: 72px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.result-hero-name {
+    font-family: 'Fraunces', serif !important;
+    font-size: 2.2rem;
+    font-weight: 300;
+    letter-spacing: -0.03em;
+    color: #F6F5F1;
+    text-transform: capitalize;
+    line-height: 1.1;
+}
+.result-hero-sub {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(246,245,241,0.4);
+    margin-top: 0.3rem;
+}
+.result-hero-conf {
+    margin-top: 0.55rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+.conf-high  { color: #4ADE80; }
+.conf-mid   { color: #FCD34D; }
+.conf-low   { color: #F87171; }
+.result-hero-body { padding: 1.5rem 2rem; }
+
+/* ── PREDICTION CARDS GRID ── */
+.pred-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+.pred-card {
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 1rem;
+    background: var(--surface-2);
+    transition: border-color 0.15s;
+}
+.pred-card.is-top {
+    border-color: var(--accent);
+    background: var(--accent-lt);
+}
+.pred-card-rank {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 0.5rem;
+}
+.pred-card.is-top .pred-card-rank { color: var(--accent); }
+.pred-card-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--ink);
+    text-transform: capitalize;
+    margin-bottom: 0.65rem;
+}
+.pred-card-pct {
+    font-family: 'Fraunces', serif !important;
+    font-size: 1.6rem;
+    font-weight: 300;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    line-height: 1;
+}
+.pred-card.is-top .pred-card-pct { color: var(--accent); }
+
+/* ── BARS ── */
+.bar-row { margin-bottom: 0.6rem; }
+.bar-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 0.8rem;
+    margin-bottom: 0.28rem;
+    font-weight: 500;
+    color: var(--ink-2);
+}
+.bar-meta span:last-child { font-weight: 700; font-size: 0.78rem; color: var(--ink); }
+.bar-track {
+    height: 6px;
+    background: var(--surface-3);
+    border-radius: 9999px;
+    overflow: hidden;
+}
+.bar-fill {
+    height: 6px;
+    border-radius: 9999px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── QUALITY BADGE ── */
+.quality-badge {
+    display: inline-block;
+    padding: 0.25rem 0.85rem;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+.qb-excellent { background: var(--green-lt);  color: var(--green); }
+.qb-good      { background: var(--accent-lt); color: var(--accent); }
+.qb-fair      { background: var(--amber-lt);  color: var(--amber); }
+.qb-poor      { background: var(--red-lt);    color: var(--red); }
+
+/* ── CONDITION TAGS ── */
+.cond-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 9999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border: 1.5px solid;
+}
+.cond-modern  { background: var(--accent-lt); border-color: #B9D4F7; color: var(--accent); }
+.cond-vintage { background: var(--amber-lt);  border-color: #F9CC83; color: var(--amber); }
+.cond-clean   { background: var(--green-lt);  border-color: #86CFAF; color: var(--green); }
+.cond-noisy   { background: var(--red-lt);    border-color: #F9C4C4; color: var(--red); }
+
+/* ── STAT TILES ── */
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+}
+.stat-tile {
+    background: var(--surface-2);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.2rem;
+}
+.stat-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 0.4rem; }
+.stat-value { font-family: 'Fraunces', serif !important; font-size: 1.55rem; font-weight: 300; color: var(--ink); letter-spacing: -0.02em; }
+.stat-unit  { font-size: 0.7rem; font-weight: 600; color: var(--ink-3); margin-top: 0.12rem; }
+
+/* ── UPLOAD CONFIRMED ── */
+.upload-confirmed {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--green-lt);
+    border: 1px solid #86CFAF;
+    border-radius: var(--radius);
+    margin-top: 0.75rem;
+}
+.upload-filename { font-weight: 600; font-size: 0.85rem; color: var(--green); }
+.upload-size { font-size: 0.72rem; color: var(--green); opacity: 0.75; margin-top: 0.1rem; }
+
+/* ── VIZ IMAGES ── */
+.viz-img {
+    width: 100%;
+    border-radius: var(--radius);
+    border: 1px solid var(--rule);
+}
+
+/* ── FOOTER ── */
+.app-footer {
+    text-align: center;
+    padding: 2rem;
+    border-top: 1px solid var(--rule);
+    font-size: 0.75rem;
+    color: var(--ink-3);
+    margin-top: 1rem;
+}
+
+/* ── AUTH CARD ── */
+.auth-wordmark {
+    font-family: 'Fraunces', serif !important;
+    font-size: 1.6rem; font-weight: 600;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.2rem;
+    color: var(--ink);
+}
+.auth-wordmark span { color: var(--accent); }
+.auth-tagline {
+    font-size: 0.75rem; font-weight: 500;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 640px) {
+    .pred-grid { grid-template-columns: 1fr; }
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    .app-hero h1 { font-size: 2rem; }
+    .app-content { padding: 1.25rem 1rem; }
+}
+</style>
+""", unsafe_allow_html=True)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SESSION STATE
+# ─────────────────────────────────────────────────────────────────────────────
 def init_state():
-    defaults = {
-        'auth_page': 'login', 'dark_mode': True, 'result': None,
-        'auth_status': None, 'auth_name': '', 'auth_username': '',
-    }
-    for k, v in defaults.items():
+    for k, v in {
+        'auth_page': 'login',
+        'result': None,
+        'auth_status': None,
+        'auth_name': '',
+        'auth_username': '',
+    }.items():
         if k not in st.session_state:
             st.session_state[k] = v
+
 
 def get_authenticator():
     import streamlit_authenticator as stauth
     config = load_config()
     auth = stauth.Authenticate(
-        config['credentials'], config['cookie']['name'],
-        config['cookie']['key'], config['cookie']['expiry_days'],
+        config['credentials'],
+        config['cookie']['name'],
+        config['cookie']['key'],
+        config['cookie']['expiry_days'],
     )
     return auth, config
 
-def hash_password(plain):
+def hash_password(plain: str) -> str:
     import bcrypt
     return bcrypt.hashpw(plain.encode(), bcrypt.gensalt()).decode()
 
-# ─── THEME TOKENS ────────────────────────────────────────────────────────────
-def get_theme(dark):
-    if dark:
-        return {
-            'bg':       '#0d0d14',
-            'surface':  '#16161f',
-            'surface2': '#1d1d2c',
-            'border':   '#2c2c42',
-            'text':     '#eaeaf5',
-            'muted':    '#6b6b95',
-            'accent':   '#7c6af7',
-            'accent2':  '#a78bfa',
-            'green':    '#10b981',
-            'amber':    '#f59e0b',
-            'red':      '#ef4444',
-            'blue':     '#3b82f6',
-            'input_bg': '#1a1a2c',
-            'input_bd': '#3a3a58',
-            'track':    '#2a2a40',
-            'card_bg':  '#16161f',
-            'hdr1':     '#b91c1c',
-            'hdr2':     '#ea580c',
-            'auth_bg1': '#0d0d14',
-            'auth_bg2': '#1a0d2e',
-            'auth_card':'#141420',
-            'auth_bd':  '#28283d',
-            'success_bg':'#0c1a10',
-            'success_bd':'#166534',
-        }
-    else:
-        return {
-            'bg':       '#f2f2fa',
-            'surface':  '#ffffff',
-            'surface2': '#f8f8fd',
-            'border':   '#e4e4f0',
-            'text':     '#0f0f1a',
-            'muted':    '#8888aa',
-            'accent':   '#5b50e8',
-            'accent2':  '#764ba2',
-            'green':    '#10b981',
-            'amber':    '#f59e0b',
-            'red':      '#ef4444',
-            'blue':     '#3b82f6',
-            'input_bg': '#ffffff',
-            'input_bd': '#cccce0',
-            'track':    '#e0e0f0',
-            'card_bg':  '#ffffff',
-            'hdr1':     '#b91c1c',
-            'hdr2':     '#ea580c',
-            'auth_bg1': '#4f46e5',
-            'auth_bg2': '#7c3aed',
-            'auth_card':'#ffffff',
-            'auth_bd':  '#e4e4f0',
-            'success_bg':'#ecfdf5',
-            'success_bd':'#6ee7b7',
-        }
 
-# ─── MASTER CSS ──────────────────────────────────────────────────────────────
-def inject_css(t, is_auth=False):
-    auth_page_bg = f"linear-gradient(160deg, {t['auth_bg1']} 0%, #0a0a1a 50%, {t['auth_bg2']} 100%)" if t['bg'] == '#0d0d14' else f"linear-gradient(160deg, #4338ca 0%, #5b50e8 40%, #7c3aed 100%)"
-
-    st.markdown(f"""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
-
-/* GLOBAL RESET */
-html, body, * {{ box-sizing: border-box; }}
-* {{ font-family: 'Plus Jakarta Sans', sans-serif !important; }}
-#MainMenu, footer, header {{ visibility: hidden !important; display: none !important; }}
-.block-container {{ padding: 0 !important; max-width: 100% !important; background: transparent !important; }}
-section[data-testid="stSidebar"] {{ display: none !important; }}
-
-/* APP BACKGROUND */
-[data-testid="stAppViewContainer"] {{
-    background: {auth_page_bg if is_auth else t['bg']} !important;
-    min-height: 100vh;
-}}
-[data-testid="stMain"] {{ background: transparent !important; }}
-[data-testid="stHeader"] {{ display: none !important; }}
-[data-testid="stDecoration"] {{ display: none !important; }}
-
-/* REMOVE DEFAULT STREAMLIT TOP PADDING */
-.main .block-container {{ padding-top: 0 !important; }}
-div[data-testid="stVerticalBlock"] > div:first-child {{ margin-top: 0 !important; }}
-
-/* ── INPUT FIELDS ── */
-div[data-testid="stTextInput"] > label {{
-    color: {t['text']} !important;
-    font-weight: 600 !important;
-    font-size: 0.82rem !important;
-    margin-bottom: 0.3rem !important;
-    display: block !important;
-}}
-div[data-testid="stTextInput"] > div > div > input {{
-    background: {t['input_bg']} !important;
-    border: 1.5px solid {t['input_bd']} !important;
-    border-radius: 10px !important;
-    color: {t['text']} !important;
-    font-size: 0.9rem !important;
-    padding: 0.65rem 0.9rem !important;
-    width: 100% !important;
-    transition: border-color 0.2s, box-shadow 0.2s !important;
-    box-shadow: none !important;
-}}
-div[data-testid="stTextInput"] > div > div > input:focus {{
-    border-color: {t['accent']} !important;
-    box-shadow: 0 0 0 3px {t['accent']}30 !important;
-    outline: none !important;
-}}
-div[data-testid="stTextInput"] > div > div > input::placeholder {{
-    color: {t['muted']} !important;
-    opacity: 0.7 !important;
-}}
-
-/* ── BUTTONS ── */
-div[data-testid="stButton"] > button {{
-    background: linear-gradient(135deg, {t['accent']} 0%, {t['accent2']} 100%) !important;
-    color: white !important;
-    font-weight: 700 !important;
-    font-size: 0.88rem !important;
-    border-radius: 50px !important;
-    border: none !important;
-    padding: 0.65rem 1.8rem !important;
-    letter-spacing: 0.01em !important;
-    transition: opacity 0.15s, transform 0.15s !important;
-    box-shadow: 0 4px 15px {t['accent']}40 !important;
-    cursor: pointer !important;
-    width: 100% !important;
-}}
-div[data-testid="stButton"] > button:hover {{
-    opacity: 0.88 !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 6px 20px {t['accent']}55 !important;
-}}
-div[data-testid="stButton"] > button:disabled,
-div[data-testid="stButton"] > button[disabled] {{
-    background: {t['track']} !important;
-    color: {t['muted']} !important;
-    box-shadow: none !important;
-    transform: none !important;
-    opacity: 1 !important;
-    cursor: not-allowed !important;
-}}
-/* secondary buttons: theme toggle + sign out */
-div[data-testid="stButton"] > button[kind="secondary"] {{
-    background: {t['surface2']} !important;
-    color: {t['text']} !important;
-    border: 1.5px solid {t['border']} !important;
-    box-shadow: none !important;
-    font-weight: 600 !important;
-}}
-div[data-testid="stButton"] > button[kind="secondary"]:hover {{
-    border-color: {t['accent']} !important;
-    color: {t['accent']} !important;
-    background: {t['surface2']} !important;
-}}
-
-/* ── DOWNLOAD BUTTONS ── */
-div[data-testid="stDownloadButton"] > button {{
-    background: {t['surface2']} !important;
-    color: {t['text']} !important;
-    border: 1.5px solid {t['border']} !important;
-    border-radius: 12px !important;
-    font-weight: 600 !important;
-    font-size: 0.84rem !important;
-    padding: 0.6rem 1.2rem !important;
-    width: 100% !important;
-    transition: all 0.15s !important;
-    box-shadow: none !important;
-}}
-div[data-testid="stDownloadButton"] > button:hover {{
-    border-color: {t['accent']} !important;
-    color: {t['accent']} !important;
-    transform: translateY(-1px) !important;
-}}
-
-/* ── FILE UPLOADER ── */
-section[data-testid="stFileUploadDropzone"] {{
-    background: {t['surface2']} !important;
-    border: 2px dashed {t['border']} !important;
-    border-radius: 14px !important;
-    padding: 1.2rem !important;
-    transition: all 0.2s !important;
-}}
-section[data-testid="stFileUploadDropzone"]:hover {{
-    border-color: {t['accent']} !important;
-    background: {t['accent']}08 !important;
-}}
-div[data-testid="stFileUploaderDropzoneInstructions"] span,
-div[data-testid="stFileUploaderDropzoneInstructions"] p,
-div[data-testid="stFileUploaderDropzoneInstructions"] small {{
-    color: {t['muted']} !important;
-}}
-/* Hide the duplicate "Browse files" button text overlap */
-div[data-testid="stFileUploadDropzone"] label {{
-    color: {t['muted']} !important;
-}}
-
-/* ── ALERTS ── */
-div[data-testid="stAlert"] {{
-    border-radius: 12px !important;
-    font-size: 0.86rem !important;
-}}
-
-/* ── SPINNER ── */
-div[data-testid="stSpinner"] > div {{
-    border-top-color: {t['accent']} !important;
-}}
-
-/* ── AUDIO PLAYER ── */
-audio {{
-    width: 100% !important;
-    border-radius: 10px !important;
-    margin-top: 0.5rem !important;
-}}
-
-/* ── COLUMN GAPS ── */
-div[data-testid="stHorizontalBlock"] {{
-    gap: 0.75rem !important;
-    align-items: stretch !important;
-}}
-
-/* ── METRIC ELEMENTS ── */
-div[data-testid="stMetric"] {{
-    background: {t['surface2']} !important;
-    border: 1px solid {t['border']} !important;
-    border-radius: 12px !important;
-    padding: 0.9rem 1rem !important;
-}}
-div[data-testid="stMetricLabel"] p {{
-    color: {t['muted']} !important;
-    font-size: 0.72rem !important;
-    font-weight: 600 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.06em !important;
-}}
-div[data-testid="stMetricValue"] {{
-    color: {t['text']} !important;
-    font-size: 1.35rem !important;
-    font-weight: 800 !important;
-}}
-
-/* REMOVE STRAY IFRAME/TOOLBAR */
-[data-testid="stToolbar"] {{ display: none !important; }}
-iframe[title="streamlit_authenticator.authenticate"] {{ border: none !important; }}
-</style>
+# ─────────────────────────────────────────────────────────────────────────────
+# AUTH PAGE
+# ─────────────────────────────────────────────────────────────────────────────
+def render_auth():
+    st.markdown("""
+<div class="auth-grid-bg"></div>
+<div class="auth-accent-blob"></div>
 """, unsafe_allow_html=True)
 
-# ─── AUTH PAGE ────────────────────────────────────────────────────────────────
-def render_auth(t):
-    dark = t['bg'] == '#0d0d14'
-
-    # Centered layout
-    left, center, right = st.columns([1, 1.4, 1])
-    with center:
-        st.markdown("<div style='height:2.5rem'></div>", unsafe_allow_html=True)
-
-        # ── LOGO ──
-        st.markdown(f"""
-<div style="text-align:center; margin-bottom:1.5rem;">
-  <div style="
-    display:inline-flex; align-items:center; justify-content:center;
-    width:62px; height:62px; border-radius:18px; font-size:1.75rem;
-    background:linear-gradient(135deg,{t['accent']},{t['accent2']});
-    box-shadow:0 8px 24px {t['accent']}50;
-    margin-bottom:0.9rem;
-  ">🎵</div>
-  <h1 style="
-    font-family:'Space Grotesk',sans-serif !important;
-    font-size:1.9rem; font-weight:700; color:#ffffff;
-    margin:0; letter-spacing:-0.03em;
-    text-shadow:0 2px 16px rgba(0,0,0,0.4);
-  ">InstruNet <span style="color:{t['accent2']}">AI</span></h1>
-  <p style="
-    font-size:0.68rem; color:rgba(255,255,255,0.45);
-    margin:0.3rem 0 0; font-weight:600;
-    text-transform:uppercase; letter-spacing:0.1em;
-  ">AI Music Instrument Recognition</p>
+    _, mid, _ = st.columns([1, 1.2, 1])
+    with mid:
+        st.markdown("""
+<div style="text-align:center; padding: 2.5rem 0 1.5rem; position: relative; z-index: 1;">
+  <div style="width:52px;height:52px;background:#1A1917;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:1rem;">🎵</div>
+  <div class="auth-wordmark">Instru<span>Net</span></div>
+  <div class="auth-tagline">AI Instrument Recognition</div>
 </div>
 """, unsafe_allow_html=True)
 
-        # ── CARD ──
-        st.markdown(f"""
-<div style="
-  background:{t['auth_card']};
-  border:1px solid {t['auth_bd']};
-  border-radius:20px;
-  padding:1.8rem 1.7rem 1.5rem;
-  box-shadow:0 24px 80px rgba(0,0,0,0.45);
-">
+    _, mid, _ = st.columns([1, 1.2, 1])
+    with mid:
+        st.markdown("""
+<div style="background:#fff;border:1px solid #E2E0DB;border-radius:16px;padding:2rem;
+     box-shadow:0 4px 24px rgba(26,25,23,.08);position:relative;z-index:1;">
 """, unsafe_allow_html=True)
 
-        # Tab row
-        active = st.session_state.auth_page == 'login'
-        c1, c2 = st.columns(2)
-        with c1:
-            if st.button("🔑  Sign In", key="tab_login", use_container_width=True,
-                         type="primary" if active else "secondary"):
+        active_login = st.session_state.auth_page == 'login'
+        t1, t2 = st.columns(2)
+        with t1:
+            if st.button("Sign In", key="tab_login", use_container_width=True,
+                         type="primary" if active_login else "secondary"):
                 st.session_state.auth_page = 'login'; st.rerun()
-        with c2:
-            if st.button("✨  Register", key="tab_reg", use_container_width=True,
-                         type="primary" if not active else "secondary"):
+        with t2:
+            if st.button("Register", key="tab_reg", use_container_width=True,
+                         type="primary" if not active_login else "secondary"):
                 st.session_state.auth_page = 'register'; st.rerun()
 
-        st.markdown(f"""<hr style="
-          border:none; border-top:1px solid {t['border']};
-          margin:1rem 0 1.2rem;
-        ">""", unsafe_allow_html=True)
+        st.markdown("<div style='height:1.25rem'></div>", unsafe_allow_html=True)
 
-        # ── LOGIN FORM ──
-        if active:
-            st.markdown(f"""
-<p style="font-family:'Space Grotesk',sans-serif !important;
-   font-size:1.05rem; font-weight:700; color:{t['text']}; margin:0 0 0.1rem">
-   Welcome back 👋</p>
-<p style="font-size:0.78rem; color:{t['muted']}; margin:0 0 1rem">
-   Sign in to your InstruNet AI account</p>
+        if st.session_state.auth_page == 'login':
+            st.markdown("""
+<p style="font-family:'Fraunces',serif;font-size:1.15rem;font-weight:300;letter-spacing:-.02em;margin:0 0 .1rem">Welcome back</p>
+<p style="font-size:.78rem;color:#9A9793;margin:0 0 1.25rem">Sign in to your account to continue.</p>
 """, unsafe_allow_html=True)
+
             auth, config = get_authenticator()
             login_result = auth.login(
-                fields={'Form name': 'Sign In', 'Username': 'Username',
-                        'Password': 'Password', 'Login': 'Sign In'},
+                fields={'Form name':'Sign In','Username':'Username',
+                        'Password':'Password','Login':'Sign In'},
                 key='login_widget'
             )
             if isinstance(login_result, tuple) and len(login_result) == 3:
@@ -434,78 +664,62 @@ def render_auth(t):
                 st.session_state.auth_status   = True
                 st.session_state.auth_name     = name
                 st.session_state.auth_username = username
-                save_config(config); st.rerun()
+                save_config(config)
+                st.rerun()
             elif auth_status is False:
-                st.error("⚠️ Incorrect username or password.")
+                st.error("Incorrect username or password.")
 
-            st.markdown(f"""
-<p style="text-align:center; font-size:0.73rem; color:{t['muted']}; margin-top:0.8rem">
-  No account? Click <b style="color:{t['accent']}">Register</b> above.</p>
-""", unsafe_allow_html=True)
+            st.markdown('<p style="text-align:center;font-size:.74rem;color:#9A9793;margin-top:.75rem">No account? Click <strong>Register</strong> above.</p>', unsafe_allow_html=True)
 
-        # ── REGISTER FORM ──
         else:
-            st.markdown(f"""
-<p style="font-family:'Space Grotesk',sans-serif !important;
-   font-size:1.05rem; font-weight:700; color:{t['text']}; margin:0 0 0.1rem">
-   Create your account ✨</p>
-<p style="font-size:0.78rem; color:{t['muted']}; margin:0 0 1rem">
-   Join InstruNet AI — free forever</p>
+            st.markdown("""
+<p style="font-family:'Fraunces',serif;font-size:1.15rem;font-weight:300;letter-spacing:-.02em;margin:0 0 .1rem">Create an account</p>
+<p style="font-size:.78rem;color:#9A9793;margin:0 0 1.25rem">Join InstruNet AI and start analyzing.</p>
 """, unsafe_allow_html=True)
+
             new_name  = st.text_input("Full Name",        placeholder="Alex Johnson",    key="reg_name")
             new_user  = st.text_input("Username",         placeholder="alexj",           key="reg_user")
             new_email = st.text_input("Email",            placeholder="you@example.com", key="reg_email")
-            new_pass  = st.text_input("Password",         placeholder="Min 6 chars",     type="password", key="reg_pass")
-            new_pass2 = st.text_input("Confirm Password", placeholder="Repeat password", type="password", key="reg_pass2")
+            new_pass  = st.text_input("Password",         placeholder="Min. 6 characters", type="password", key="reg_pass")
+            new_pass2 = st.text_input("Confirm Password", placeholder="Repeat password",   type="password", key="reg_pass2")
 
-            if st.button("Create Account →", use_container_width=True, key="reg_submit"):
+            if st.button("Create Account", use_container_width=True, key="reg_submit"):
                 config = load_config()
                 users  = config["credentials"]["usernames"]
-                err    = None
+                err = None
                 if not all([new_name, new_user, new_email, new_pass, new_pass2]):
                     err = "Please fill in all fields."
                 elif new_user in users:
                     err = f"Username '{new_user}' is already taken."
                 elif any(u.get('email') == new_email for u in users.values()):
-                    err = "That email is already registered."
+                    err = "An account with this email already exists."
                 elif len(new_pass) < 6:
                     err = "Password must be at least 6 characters."
                 elif new_pass != new_pass2:
                     err = "Passwords do not match."
+
                 if err:
-                    st.error(f"⚠️ {err}")
+                    st.error(err)
                 else:
+                    hashed = hash_password(new_pass)
                     config["credentials"]["usernames"][new_user] = {
                         "name": new_name, "email": new_email,
-                        "password": hash_password(new_pass),
-                        "failed_login_attempts": 0, "logged_in": False
+                        "password": hashed, "failed_login_attempts": 0, "logged_in": False
                     }
                     save_config(config)
-                    st.success("✅ Account created! Click Sign In to log in.")
+                    st.success("Account created! Sign in to continue.")
                     st.balloons()
 
-            st.markdown(f"""
-<p style="text-align:center; font-size:0.73rem; color:{t['muted']}; margin-top:0.8rem">
-  Have an account? Click <b style="color:{t['accent']}">Sign In</b> above.</p>
-""", unsafe_allow_html=True)
+            st.markdown('<p style="text-align:center;font-size:.74rem;color:#9A9793;margin-top:.75rem">Have an account? Click <strong>Sign In</strong> above.</p>', unsafe_allow_html=True)
 
-        # Close card div
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # ── THEME TOGGLE ──
-        st.markdown("<div style='height:0.8rem'></div>", unsafe_allow_html=True)
-        if st.button("☀️  Light mode" if dark else "🌙  Dark mode",
-                     key="auth_theme", use_container_width=True, type="secondary"):
-            st.session_state.dark_mode = not dark; st.rerun()
-
-        st.markdown(f"""
-<p style="text-align:center; font-size:0.67rem; color:rgba(255,255,255,0.22);
-   margin-top:0.7rem; padding-bottom:2rem">
-  🔒 Bcrypt-secured &nbsp;·&nbsp; InstruNet AI © 2026</p>
-""", unsafe_allow_html=True)
+    st.markdown('<p style="text-align:center;font-size:.72rem;color:#C8C6C0;margin-top:1rem;position:relative;z-index:1;">Passwords are bcrypt-hashed · InstruNet AI © 2026</p>', unsafe_allow_html=True)
 
 
-# ─── AUDIO PROCESSING ─────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# AUDIO PROCESSING
+# ─────────────────────────────────────────────────────────────────────────────
 def process_audio_file(audio_bytes, sr=22050, duration=3.0):
     y, sr = librosa.load(io.BytesIO(audio_bytes), sr=sr, duration=duration, mono=True)
     target = int(sr * duration)
@@ -514,7 +728,7 @@ def process_audio_file(audio_bytes, sr=22050, duration=3.0):
 
 def extract_mel_spectrogram(y, sr, n_mels=128, n_fft=2048, hop_length=512):
     mel = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=n_mels, n_fft=n_fft, hop_length=hop_length)
-    mel_db   = librosa.power_to_db(mel, ref=np.max)
+    mel_db = librosa.power_to_db(mel, ref=np.max)
     mel_norm = (mel_db - mel_db.min()) / (mel_db.max() - mel_db.min() + 1e-8)
     if mel_norm.shape[1] > 128:
         mel_norm = mel_norm[:, :128]
@@ -522,45 +736,57 @@ def extract_mel_spectrogram(y, sr, n_mels=128, n_fft=2048, hop_length=512):
         mel_norm = np.pad(mel_norm, ((0,0),(0, 128 - mel_norm.shape[1])), mode='constant')
     return mel_norm
 
-def fig_to_b64(fig, dark):
-    bg = '#16161f' if dark else '#ffffff'
-    tc = '#6b6b95' if dark else '#6b7280'
-    lc = '#a0a0c0' if dark else '#374151'
-    fig.patch.set_facecolor(bg)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# VISUALIZATION
+# ─────────────────────────────────────────────────────────────────────────────
+def fig_to_b64(fig):
+    fig.patch.set_facecolor('#FFFFFF')
     for ax in fig.axes:
-        ax.set_facecolor(bg)
-        ax.tick_params(colors=tc)
-        ax.xaxis.label.set_color(lc); ax.yaxis.label.set_color(lc)
-        ax.title.set_color('#eaeaf5' if dark else '#0f0f1a')
-        for sp in ax.spines.values(): sp.set_edgecolor('#2c2c42' if dark else '#e4e4f0')
+        ax.set_facecolor('#FFFFFF')
+        ax.tick_params(colors='#9A9793', labelsize=9)
+        ax.xaxis.label.set_color('#4A4845')
+        ax.yaxis.label.set_color('#4A4845')
+        ax.title.set_color('#1A1917')
+        for sp in ax.spines.values():
+            sp.set_edgecolor('#E2E0DB')
     buf = io.BytesIO()
-    fig.savefig(buf, format='png', dpi=100, bbox_inches='tight', facecolor=bg)
+    fig.savefig(buf, format='png', dpi=110, bbox_inches='tight', facecolor='#FFFFFF')
     buf.seek(0)
     b64 = base64.b64encode(buf.read()).decode()
     plt.close(fig)
     return f"data:image/png;base64,{b64}"
 
-def gen_waveform(y, sr, dark):
+def gen_waveform(y, sr):
     fig, ax = plt.subplots(figsize=(12, 2.8))
-    ax.plot(np.arange(len(y))/sr, y, color='#7c6af7' if dark else '#5b50e8', linewidth=0.6)
-    ax.set_xlabel('Time (s)', fontsize=10); ax.set_ylabel('Amplitude', fontsize=10)
-    ax.set_title('Waveform', fontsize=12, fontweight='bold')
-    ax.grid(True, alpha=0.1 if dark else 0.2); ax.set_xlim(0, len(y)/sr)
-    plt.tight_layout(); return fig_to_b64(fig, dark)
+    ax.plot(np.arange(len(y))/sr, y, color='#2C5282', linewidth=0.6, alpha=0.85)
+    ax.fill_between(np.arange(len(y))/sr, y, alpha=0.08, color='#2C5282')
+    ax.set_xlabel('Time (s)', fontsize=10)
+    ax.set_ylabel('Amplitude', fontsize=10)
+    ax.set_title('Waveform', fontsize=11, fontweight='bold')
+    ax.grid(True, alpha=0.2, linewidth=0.5)
+    ax.set_xlim(0, len(y)/sr)
+    plt.tight_layout()
+    return fig_to_b64(fig)
 
-def gen_spectrogram(mel, sr, dark):
-    fig, ax = plt.subplots(figsize=(12, 3.8))
-    img = librosa.display.specshow(mel, sr=sr, x_axis='time', y_axis='mel', ax=ax,
-                                   cmap='magma' if dark else 'viridis')
-    ax.set_title('Mel-Spectrogram', fontsize=12, fontweight='bold')
-    ax.set_xlabel('Time (s)', fontsize=10); ax.set_ylabel('Frequency', fontsize=10)
+def gen_spectrogram(mel, sr):
+    fig, ax = plt.subplots(figsize=(12, 3.5))
+    img = librosa.display.specshow(mel, sr=sr, x_axis='time', y_axis='mel', ax=ax, cmap='Blues')
+    ax.set_title('Mel-Spectrogram', fontsize=11, fontweight='bold')
+    ax.set_xlabel('Time (s)', fontsize=10)
+    ax.set_ylabel('Frequency (Hz)', fontsize=10)
     cbar = plt.colorbar(img, ax=ax, format='%+2.0f dB')
-    tc = '#6b6b95' if dark else '#6b7280'
-    cbar.ax.yaxis.set_tick_params(color=tc)
-    plt.setp(cbar.ax.yaxis.get_ticklabels(), color=tc)
-    plt.tight_layout(); return fig_to_b64(fig, dark)
+    cbar.set_label('Intensity (dB)', fontsize=9)
+    cbar.ax.yaxis.set_tick_params(color='#9A9793', labelsize=8)
+    plt.setp(cbar.ax.yaxis.get_ticklabels(), color='#9A9793')
+    plt.tight_layout()
+    return fig_to_b64(fig)
 
-def predict_audio(audio_bytes, model, label_encoder, dark):
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PREDICTION
+# ─────────────────────────────────────────────────────────────────────────────
+def predict_audio(audio_bytes, model, label_encoder):
     y, sr = process_audio_file(audio_bytes)
     mel   = extract_mel_spectrogram(y, sr)
     preds = model.predict(mel.reshape(1,128,128,1), verbose=0)
@@ -569,22 +795,28 @@ def predict_audio(audio_bytes, model, label_encoder, dark):
                for i in np.argsort(inst_p)[::-1][:3]]
     qi = np.argmax(preds['quality'][0])
     quality = {
-        'label': QUALITY_LABELS[qi], 'confidence': float(preds['quality'][0][qi]*100),
+        'label': QUALITY_LABELS[qi],
+        'confidence': float(preds['quality'][0][qi]*100),
         'all_scores': {QUALITY_LABELS[i]: float(preds['quality'][0][i]*100) for i in range(4)}
     }
     ci = np.argmax(preds['condition'][0])
     condition = {
-        'label': CONDITION_LABELS[ci], 'confidence': float(preds['condition'][0][ci]*100),
+        'label': CONDITION_LABELS[ci],
+        'confidence': float(preds['condition'][0][ci]*100),
         'all_scores': {CONDITION_LABELS[i]: float(preds['condition'][0][i]*100) for i in range(4)}
     }
     return {
         'instrument': top3[0], 'top_instruments': top3,
         'quality': quality, 'condition': condition,
-        'visualizations': {'waveform': gen_waveform(y, sr, dark), 'spectrogram': gen_spectrogram(mel, sr, dark)},
+        'visualizations': {'waveform': gen_waveform(y, sr), 'spectrogram': gen_spectrogram(mel, sr)},
         'audio_info': {'duration': float(len(y)/sr), 'sample_rate': int(sr), 'samples': len(y)},
         'timestamp': datetime.now().isoformat()
     }
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PDF EXPORT
+# ─────────────────────────────────────────────────────────────────────────────
 def generate_pdf_bytes(result):
     from reportlab.lib.pagesizes import letter
     from reportlab.lib import colors
@@ -595,364 +827,338 @@ def generate_pdf_bytes(result):
     doc = SimpleDocTemplate(buf, pagesize=letter)
     story, styles = [], getSampleStyleSheet()
     ts = ParagraphStyle('T', parent=styles['Heading1'], fontSize=22,
-                        textColor=colors.HexColor('#1e40af'), spaceAfter=26, alignment=1)
+                        textColor=colors.HexColor('#1A1917'), spaceAfter=26, alignment=1)
     story.append(Paragraph("Audio Analysis Report — InstruNet AI", ts))
-    story.append(Spacer(1, .25*inch))
+    story.append(Spacer(1, .28*inch))
     story.append(Paragraph(f"<b>Date:</b> {datetime.now().strftime('%B %d, %Y at %H:%M:%S')}", styles['Normal']))
-    story.append(Spacer(1, .18*inch))
+    story.append(Spacer(1, .2*inch))
     def mkt(data, cw, hc):
         t = Table(data, colWidths=cw)
         t.setStyle(TableStyle([
-            ('BACKGROUND',(0,0),(-1,0),colors.HexColor(hc)),('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
-            ('ALIGN',(0,0),(-1,-1),'CENTER'),('FONTNAME',(0,0),(-1,0),'Helvetica-Bold'),
-            ('FONTSIZE',(0,0),(-1,0),11),('BOTTOMPADDING',(0,0),(-1,0),10),
-            ('BACKGROUND',(0,1),(-1,-1),colors.beige),('GRID',(0,0),(-1,-1),1,colors.black),
-        ])); return t
+            ('BACKGROUND',(0,0),(-1,0),colors.HexColor(hc)),
+            ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
+            ('ALIGN',(0,0),(-1,-1),'CENTER'),
+            ('FONTNAME',(0,0),(-1,0),'Helvetica-Bold'),
+            ('FONTSIZE',(0,0),(-1,0),11),
+            ('BOTTOMPADDING',(0,0),(-1,0),10),
+            ('BACKGROUND',(0,1),(-1,-1),colors.beige),
+            ('GRID',(0,0),(-1,-1),1,colors.HexColor('#E2E0DB')),
+        ]))
+        return t
     ai = result['audio_info']
     for heading, data, cw, hc in [
-        ("INSTRUMENT PREDICTION",[['Instrument','Confidence'],[result['instrument']['name'].upper(),f"{result['instrument']['confidence']:.1f}%"]],[3*inch,2*inch],'#3b82f6'),
-        ("AUDIO QUALITY",[['Quality','Confidence'],[result['quality']['label'].upper(),f"{result['quality']['confidence']:.1f}%"]],[3*inch,2*inch],'#10b981'),
-        ("AUDIO CONDITION",[['Condition','Confidence'],[result['condition']['label'].upper(),f"{result['condition']['confidence']:.1f}%"]],[3*inch,2*inch],'#f59e0b'),
-        ("AUDIO INFO",[['Property','Value'],['Duration',f"{ai['duration']:.2f}s"],['Sample Rate',f"{ai['sample_rate']} Hz"],['Samples',f"{ai['samples']:,}"]],[3*inch,2*inch],'#6b7280'),
+        ("INSTRUMENT PREDICTION",
+         [['Instrument','Confidence'],[result['instrument']['name'].upper(), f"{result['instrument']['confidence']:.1f}%"]],
+         [3*inch,2*inch],'#2C5282'),
+        ("AUDIO QUALITY",
+         [['Quality','Confidence'],[result['quality']['label'].upper(), f"{result['quality']['confidence']:.1f}%"]],
+         [3*inch,2*inch],'#1A6B4A'),
+        ("AUDIO CONDITION",
+         [['Condition','Confidence'],[result['condition']['label'].upper(), f"{result['condition']['confidence']:.1f}%"]],
+         [3*inch,2*inch],'#92500A'),
+        ("AUDIO INFORMATION",
+         [['Property','Value'],['Duration',f"{ai['duration']:.2f}s"],
+          ['Sample Rate',f"{ai['sample_rate']} Hz"],['Samples',f"{ai['samples']:,}"]],
+         [3*inch,2*inch],'#4A4845'),
     ]:
-        story.append(Paragraph(f"<b>{heading}</b>",styles['Heading2']))
-        story.append(mkt(data,cw,hc)); story.append(Spacer(1,.2*inch))
-    story.append(Paragraph("<b>Top 3 Predictions</b>",styles['Heading3']))
-    t3=[['Rank','Instrument','Confidence']]
-    for i,x in enumerate(result['top_instruments'],1): t3.append([str(i),x['name'].capitalize(),f"{x['confidence']:.1f}%"])
-    story.append(mkt(t3,[1*inch,2*inch,2*inch],'#6366f1'))
+        story.append(Paragraph(f"<b>{heading}</b>", styles['Heading2']))
+        story.append(mkt(data, cw, hc)); story.append(Spacer(1,.25*inch))
+    story.append(Paragraph("<b>Top 3 Predictions</b>", styles['Heading3']))
+    t3 = [['Rank','Instrument','Confidence']]
+    for i, x in enumerate(result['top_instruments'],1):
+        t3.append([str(i), x['name'].capitalize(), f"{x['confidence']:.1f}%"])
+    story.append(mkt(t3,[1*inch,2*inch,2*inch],'#5B21B6'))
     doc.build(story); buf.seek(0); return buf.read()
 
-# ─── RENDER HELPERS ───────────────────────────────────────────────────────────
-def gauge_svg(val, dark, size=180, stroke=14, label=''):
-    import math
-    r=( size-stroke)/2; cx=cy=size/2; c=2*math.pi*r; arc=c*.75
-    off=arc-(val/100)*arc
-    col='#10b981' if val>=80 else '#f59e0b' if val>=50 else '#ef4444'
-    trk='#2a2a40' if dark else '#e0e0f0'
-    rot=f"rotate(-225 {cx} {cy})"
-    lb=(f'<text x="{cx}" y="{size-4}" text-anchor="middle" font-size="9" font-weight="700" '
-        f'fill="{col if label else trk}" font-family="Plus Jakarta Sans,sans-serif">{label.upper()}</text>') if label else ''
-    return (f'<svg width="{size}" height="{size}" viewBox="0 0 {size} {size}">'
-            f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{trk}" stroke-width="{stroke}" '
-            f'stroke-linecap="round" stroke-dasharray="{arc:.2f} {c:.2f}" transform="{rot}"/>'
-            f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{col}" stroke-width="{stroke}" '
-            f'stroke-linecap="round" stroke-dasharray="{arc:.2f} {c:.2f}" stroke-dashoffset="{off:.2f}" '
-            f'transform="{rot}" style="filter:drop-shadow(0 0 5px {col}88)"/>'
-            f'<text x="{cx}" y="{cy-2}" text-anchor="middle" font-size="20" font-weight="800" '
-            f'fill="{col}" font-family="Space Grotesk,sans-serif">{val:.1f}%</text>'
-            f'<text x="{cx}" y="{cy+13}" text-anchor="middle" font-size="9" font-weight="500" '
-            f'fill="{trk}" font-family="Plus Jakarta Sans,sans-serif">CONFIDENCE</text>{lb}</svg>')
 
-def prog_bar(val, col, h=7, dark=True):
-    trk = '#2a2a40' if dark else '#e0e0f0'
-    return (f'<div style="background:{trk};border-radius:999px;overflow:hidden;height:{h}px">'
-            f'<div style="height:{h}px;width:{val:.1f}%;background:{col};'
-            f'border-radius:999px;box-shadow:0 0 6px {col}66"></div></div>')
+# ─────────────────────────────────────────────────────────────────────────────
+# RENDER — RESULT SECTIONS
+# ─────────────────────────────────────────────────────────────────────────────
+def bar_html(value, color, height=6):
+    return (f'<div class="bar-track"><div class="bar-fill" '
+            f'style="width:{value:.1f}%;background:{color};height:{height}px;"></div></div>')
 
-def section_label(txt, t):
-    return (f'<p style="font-size:0.63rem;font-weight:700;color:{t["muted"]};'
-            f'text-transform:uppercase;letter-spacing:0.09em;margin:0 0 0.55rem">{txt}</p>')
+def render_results(r):
+    inst = r['instrument']
+    icon = get_icon(inst['name'])
+    conf = inst['confidence']
+    conf_cls = 'conf-high' if conf >= 80 else 'conf-mid' if conf >= 50 else 'conf-low'
+    conf_lbl = 'High confidence' if conf >= 80 else 'Moderate confidence' if conf >= 50 else 'Low confidence'
 
-def card_wrap(content, t, extra_style=""):
-    return (f'<div style="background:{t["card_bg"]};border:1px solid {t["border"]};'
-            f'border-radius:16px;padding:1.3rem;margin-bottom:1.2rem;{extra_style}">'
-            f'{content}</div>')
+    # Top prediction cards
+    cards_html = ''
+    for i, item in enumerate(r['top_instruments']):
+        top_cls = 'is-top' if i == 0 else ''
+        cards_html += f"""
+<div class="pred-card {top_cls}">
+  <div class="pred-card-rank">{'Top pick' if i==0 else f'#{i+1}'}</div>
+  <div style="font-size:1.5rem;margin-bottom:.5rem">{get_icon(item['name'])}</div>
+  <div class="pred-card-name">{item['name']}</div>
+  <div class="pred-card-pct">{item['confidence']:.1f}%</div>
+  <div style="margin-top:.65rem">{bar_html(item['confidence'], '#2C5282' if i==0 else '#D0CEC8')}</div>
+</div>"""
 
-def card_title(txt, t):
-    return (f'<p style="font-family:Space Grotesk,sans-serif;font-size:0.92rem;font-weight:700;'
-            f'color:{t["text"]};margin:0 0 1rem;padding-bottom:0.7rem;'
-            f'border-bottom:1px solid {t["border"]}">{txt}</p>')
+    st.markdown(f"""
+<div class="result-hero">
+  <div class="result-hero-banner">
+    <div class="result-hero-icon">{icon}</div>
+    <div>
+      <div class="result-hero-name">{inst['name']}</div>
+      <div class="result-hero-sub">Detected Instrument</div>
+      <div class="result-hero-conf {conf_cls}">{conf:.1f}% · {conf_lbl}</div>
+    </div>
+  </div>
+  <div class="result-hero-body">
+    <div class="app-section-label">All predictions</div>
+    <div class="pred-grid">{cards_html}</div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
-# ─── MAIN APP ─────────────────────────────────────────────────────────────────
-def render_app(t):
-    dark = t['bg'] == '#0d0d14'
+def render_quality_card(q):
+    lbl  = q['label']
+    conf = q['confidence']
+    badge_cls = f'qb-{lbl.lower()}'
+    COLORS = {
+        'excellent': '#1A6B4A',
+        'good':      '#2C5282',
+        'fair':      '#92500A',
+        'poor':      '#9B1C1C',
+    }
+    bars = ''
+    for l, s in q['all_scores'].items():
+        is_active = l == lbl
+        col = COLORS.get(l, '#9A9793')
+        fw = 'font-weight:700' if is_active else ''
+        bars += f"""
+<div class="bar-row">
+  <div class="bar-meta">
+    <span style="{fw};text-transform:capitalize">{l}</span>
+    <span>{s:.1f}%</span>
+  </div>
+  {bar_html(s, col if is_active else '#D0CEC8')}
+</div>"""
+
+    st.markdown(f"""
+<div class="card" style="height:100%">
+  <div class="card-title">Audio Quality</div>
+  <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem">
+    <span class="quality-badge {badge_cls}">{lbl.upper()}</span>
+    <span style="font-size:.82rem;color:#4A4845;font-weight:600">{conf:.1f}% confidence</span>
+  </div>
+  {bars}
+</div>
+""", unsafe_allow_html=True)
+
+def render_condition_card(cond):
+    cs  = cond.get('all_scores', {})
+    lbl = cond['label']
+    modern  = cs.get('modern', 0)  + cs.get('clean', 0)
+    vintage = cs.get('vintage', 0) + cs.get('noisy', 0)
+    total   = modern + vintage or 1
+    is_modern  = modern >= vintage
+    is_clean   = cs.get('clean', 0) >= cs.get('noisy', 0)
+
+    era_pill = ('cond-modern' if is_modern else 'cond-vintage')
+    era_label = ('Modern' if is_modern else 'Vintage')
+    sig_pill = ('cond-clean' if is_clean else 'cond-noisy')
+    sig_label = ('Clean signal' if is_clean else 'Noisy signal')
+
+    bars = ''
+    pairs = [('Modern era', (modern/total)*100, '#2C5282'), ('Vintage era', (vintage/total)*100, '#92500A')]
+    for l, v, c in pairs:
+        is_a = (l.startswith('Modern') and is_modern) or (l.startswith('Vintage') and not is_modern)
+        bars += f"""
+<div class="bar-row">
+  <div class="bar-meta">
+    <span style="{'font-weight:700' if is_a else ''}">{l}</span>
+    <span>{v:.1f}%</span>
+  </div>
+  {bar_html(v, c if is_a else '#D0CEC8', 8)}
+</div>"""
+
+    clean_v = cs.get('clean', 0)
+    noisy_v = cs.get('noisy', 0)
+    sig_bars = ''
+    for l, v, c in [('Clean', clean_v, '#1A6B4A'), ('Noisy', noisy_v, '#9B1C1C')]:
+        sig_bars += f"""
+<div class="bar-row">
+  <div class="bar-meta"><span>{l}</span><span>{v:.1f}%</span></div>
+  {bar_html(v, c, 6)}
+</div>"""
+
+    st.markdown(f"""
+<div class="card" style="height:100%">
+  <div class="card-title">Recording Condition</div>
+  <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem">
+    <span class="cond-pill {era_pill}">{era_label}</span>
+    <span class="cond-pill {sig_pill}">{sig_label}</span>
+  </div>
+  <div class="app-section-label" style="margin-bottom:.6rem">Recording Era</div>
+  {bars}
+  <div class="app-section-label" style="margin-top:1rem;margin-bottom:.6rem">Signal Quality</div>
+  {sig_bars}
+</div>
+""", unsafe_allow_html=True)
+
+def render_info_card(result):
+    ai = result['audio_info']
+    st.markdown(f"""
+<div class="card">
+  <div class="card-title">Audio Information</div>
+  <div class="stat-grid">
+    <div class="stat-tile">
+      <div class="stat-label">Duration</div>
+      <div class="stat-value">{ai['duration']:.2f}</div>
+      <div class="stat-unit">seconds</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-label">Sample Rate</div>
+      <div class="stat-value">{ai['sample_rate']:,}</div>
+      <div class="stat-unit">Hz</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-label">Total Samples</div>
+      <div class="stat-value">{ai['samples']//1000}k</div>
+      <div class="stat-unit">samples</div>
+    </div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+    ts = datetime.now().strftime('%Y%m%d_%H%M%S')
+    c1, c2 = st.columns(2)
+    with c1:
+        st.download_button("↓ Download JSON",
+            data=json.dumps({k:v for k,v in result.items() if k!='visualizations'}, indent=2),
+            file_name=f"instrunet_{ts}.json", mime="application/json", use_container_width=True)
+    with c2:
+        st.download_button("↓ Download PDF",
+            data=generate_pdf_bytes(result),
+            file_name=f"instrunet_{ts}.pdf", mime="application/pdf", use_container_width=True)
+
+def render_viz_card(result):
+    st.markdown("""
+<div class="card">
+  <div class="card-title">Visualizations</div>
+  <div class="app-section-label" style="margin-bottom:.5rem">Waveform</div>
+""", unsafe_allow_html=True)
+    st.markdown(f'<img src="{result["visualizations"]["waveform"]}" class="viz-img" style="margin-bottom:1.25rem"/>', unsafe_allow_html=True)
+    st.markdown('<div class="app-section-label" style="margin-bottom:.5rem">Mel-Spectrogram</div>', unsafe_allow_html=True)
+    st.markdown(f'<img src="{result["visualizations"]["spectrogram"]}" class="viz-img"/>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# MAIN APP
+# ─────────────────────────────────────────────────────────────────────────────
+def render_app():
     load_model_and_encoder()
 
-    # ── HEADER ──
-    st.markdown(f"""
-<div style="
-  background:linear-gradient(135deg,{t['hdr1']} 0%,{t['hdr2']} 100%);
-  padding:1.4rem 2.2rem 1.5rem;
-">
-  <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.25rem">
-    <span style="font-size:1.4rem">🎵</span>
-    <h1 style="font-family:'Space Grotesk',sans-serif !important;font-size:1.85rem;
-               font-weight:700;color:white;margin:0;letter-spacing:-0.03em">
-      InstruNet <span style="opacity:0.5;font-weight:400">AI</span></h1>
-  </div>
-  <p style="color:rgba(255,255,255,0.55);margin:0;font-size:0.84rem">
-    AI-Powered Music Instrument Recognition &amp; Analysis</p>
-  <div style="display:flex;gap:0.45rem;margin-top:0.65rem;flex-wrap:wrap">
-    {"".join(f'<span style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);border-radius:999px;padding:0.15rem 0.7rem;font-size:0.68rem;font-weight:600;color:white;letter-spacing:0.04em">{x}</span>' for x in ['Instrument','Quality','Condition','Multi-Task CNN'])}
-  </div>
-</div>
-""", unsafe_allow_html=True)
-
-    # ── USER BAR ──
+    # ── TOPBAR ──
     name = st.session_state.get('auth_name') or st.session_state.get('name', 'User')
-    ub_left, ub_mid, ub_right = st.columns([5, 1.4, 1.2])
-    with ub_left:
-        st.markdown(f"""
-<div style="background:{t['surface2']};border-bottom:1px solid {t['border']};
-            padding:0.6rem 2.2rem;font-size:0.8rem;color:{t['muted']}">
-  👤 Signed in as <strong style="color:{t['text']}">{name}</strong>
+    col_brand, col_user, col_out = st.columns([4, 2.5, 1])
+    with col_brand:
+        st.markdown("""
+<div class="app-topbar" style="border-bottom:1px solid #E2E0DB;padding:.8rem 2.5rem">
+  <span class="app-brand">Instru<span>Net</span></span>
 </div>
 """, unsafe_allow_html=True)
-    with ub_mid:
-        st.markdown(f"<div style='background:{t['surface2']};border-bottom:1px solid {t['border']};padding:0.35rem 0.5rem'>", unsafe_allow_html=True)
-        if st.button("☀️ Light" if dark else "🌙 Dark", key="app_theme", use_container_width=True, type="secondary"):
-            st.session_state.dark_mode = not dark; st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
-    with ub_right:
-        st.markdown(f"<div style='background:{t['surface2']};border-bottom:1px solid {t['border']};padding:0.35rem 0.5rem'>", unsafe_allow_html=True)
-        if st.button("Sign Out", key="signout_btn", use_container_width=True, type="secondary"):
-            for k in ['auth_status','auth_name','auth_username','authentication_status','name','username','logout','result']:
-                if k in st.session_state: del st.session_state[k]
-            st.session_state.auth_status = None
+    with col_user:
+        st.markdown(f"""
+<div style="display:flex;align-items:center;height:100%;padding:.5rem 0;
+     font-size:.8rem;color:#9A9793;border-bottom:1px solid #E2E0DB">
+  <span style="color:#4A4845;font-weight:600">{name}</span>
+</div>""", unsafe_allow_html=True)
+    with col_out:
+        if st.button("Sign out", key="signout_btn"):
+            st.session_state.auth_status   = None
+            st.session_state.auth_name     = ''
+            st.session_state.auth_username = ''
+            for k in ["authentication_status", "name", "username", "logout"]:
+                if k in st.session_state:
+                    del st.session_state[k]
             st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
 
-    # ── MAIN CONTENT ──
-    st.markdown(f"<div style='padding:1.4rem 2.2rem 2rem;background:{t['bg']}'>", unsafe_allow_html=True)
+    # ── HERO ──
+    st.markdown("""
+<div class="app-hero">
+  <h1>Instrument<br><em>Recognition</em></h1>
+  <p>Upload an audio file — the model identifies the instrument, grades quality, and classifies recording condition.</p>
+  <div class="app-hero-pills">
+    <span class="app-hero-pill">Instrument</span>
+    <span class="app-hero-pill">Quality</span>
+    <span class="app-hero-pill">Condition</span>
+    <span class="app-hero-pill">Multi-task CNN</span>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
-    # Upload section
-    st.markdown(card_wrap(
-        card_title("☁️ Upload Audio File", t) +
-        "<p style='font-size:0.78rem;color:" + t['muted'] + ";margin:0 0 0.7rem'>Supports WAV · MP3 · OGG · FLAC · M4A — first 3 seconds analyzed</p>",
-        t
-    ), unsafe_allow_html=True)
+    # ── UPLOAD ──
+    st.markdown('<div class="app-content">', unsafe_allow_html=True)
+    st.markdown('<div class="card"><div class="card-title">Upload Audio</div>', unsafe_allow_html=True)
 
-    # File uploader OUTSIDE the HTML card (Streamlit must render it natively)
-    with st.container():
-        af = st.file_uploader(
-            "Drop audio file or click to browse",
-            type=['wav','mp3','ogg','flac','m4a'],
-            label_visibility='collapsed'
-        )
+    af = st.file_uploader(
+        "Drag and drop or click to browse — WAV · MP3 · OGG · FLAC — first 3 seconds analyzed",
+        type=['wav','mp3','ogg','flac','m4a'],
+        label_visibility='visible'
+    )
 
     if af:
         st.audio(af, format=af.type)
         st.markdown(f"""
-<div style="
-  display:flex;align-items:center;gap:0.65rem;
-  background:{t['success_bg']};border:1px solid {t['success_bd']};
-  border-radius:12px;padding:0.65rem 1rem;margin-top:0.6rem
-">
-  <span style="font-size:1rem">✅</span>
+<div class="upload-confirmed">
+  <span style="font-size:1.1rem">✓</span>
   <div>
-    <p style="font-weight:700;color:{t['text']};font-size:0.84rem;margin:0">{af.name}</p>
-    <p style="font-size:0.7rem;color:{t['muted']};margin:0">{af.size/1024:.1f} KB</p>
+    <div class="upload-filename">{af.name}</div>
+    <div class="upload-size">{af.size/1024:.1f} KB</div>
   </div>
 </div>
 """, unsafe_allow_html=True)
 
-    st.markdown("<div style='height:0.9rem'></div>", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    # Analyze button
-    _, bc, _ = st.columns([1.5, 2, 1.5])
-    with bc:
-        go = st.button("🧠  Analyze Audio", disabled=af is None, use_container_width=True)
+    # ── ANALYZE BUTTON ──
+    _, cc, _ = st.columns([3, 2, 3])
+    with cc:
+        go = st.button("Analyze Audio →", disabled=af is None, use_container_width=True)
 
     if go and af:
-        with st.spinner("🔬 Analyzing your audio…"):
+        with st.spinner("Analyzing audio…"):
             model, le = load_model_and_encoder()
-            st.session_state.result = predict_audio(af.read(), model, le, dark)
+            result = predict_audio(af.read(), model, le)
+        st.session_state.result = result
 
     # ── RESULTS ──
     if st.session_state.result:
         res = st.session_state.result
-        _render_results(res, t, dark)
+        st.markdown('<div style="margin-top:.75rem">', unsafe_allow_html=True)
+        render_results(res)
+        c1, c2 = st.columns(2)
+        with c1: render_quality_card(res['quality'])
+        with c2: render_condition_card(res['condition'])
+        render_info_card(res)
+        render_viz_card(res)
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # Footer
-    st.markdown(f"""
-<div style="
-  background:{'#08080e' if dark else '#1a1a2e'};
-  color:{'#3a3a58' if dark else '#6b7280'};
-  text-align:center;padding:1.1rem;font-size:0.74rem;
-  border-top:1px solid {t['border']}
-">© 2026 InstruNet AI · Multi-Task CNN · Instrument · Quality · Condition</div>
-""", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('<div class="app-footer">© 2026 InstruNet AI · Multi-task CNN · Instrument · Quality · Condition</div>', unsafe_allow_html=True)
 
 
-def _render_results(res, t, dark):
-    # ── HERO: instrument + gauge ──
-    inst = res['instrument']
-    icon = get_icon(inst['name'])
-    conf = inst['confidence']
-    conf_color = t['green'] if conf>=80 else t['amber'] if conf>=50 else t['red']
-    conf_label = ('✅ High Confidence' if conf>=80 else '⚠️ Moderate Confidence' if conf>=50 else '❌ Low Confidence')
-
-    # Top 3 cards
-    pred_cards_html = ""
-    for i, item in enumerate(res['top_instruments']):
-        win = i == 0
-        bg = (f"linear-gradient(135deg,{t['accent']}22,{t['accent2']}11)" if win
-              else f"{t['surface2']}")
-        bd = t['accent'] if win else t['border']
-        bc_fill = t['accent'] if win else t['muted']
-        pred_cards_html += f"""
-<div style="background:{bg};border:1.5px solid {bd};border-radius:14px;padding:1rem;flex:1;min-width:0">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.55rem">
-    <span style="background:{t['accent'] if win else t['track']};color:{'white' if win else t['muted']};
-                 font-size:0.65rem;font-weight:700;padding:0.1rem 0.5rem;border-radius:999px">
-      #{i+1}</span>
-    <span style="font-size:1.25rem">{get_icon(item['name'])}</span>
-  </div>
-  <p style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:{t['text']};
-             font-size:0.9rem;text-transform:capitalize;margin:0 0 0.5rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{item['name']}</p>
-  <div style="display:flex;justify-content:space-between;font-size:0.73rem;margin-bottom:0.3rem">
-    <span style="color:{t['muted']}">Confidence</span>
-    <span style="font-weight:800;color:{t['text']}">{item['confidence']:.1f}%</span>
-  </div>
-  {prog_bar(item['confidence'], t['accent'] if win else t['muted'], 6, dark)}
-</div>"""
-
-    st.markdown(card_wrap(
-        card_title("📊 Analysis Results", t) +
-        f"""<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
-                        gap:2rem;background:{t['surface2']};border-radius:14px;
-                        padding:1.6rem;margin-bottom:1.1rem;border:1px solid {t['border']}">
-          <div style="text-align:center">{gauge_svg(conf, dark, 185, 15)}</div>
-          <div style="text-align:center">
-            <div style="font-size:3.8rem;line-height:1;margin-bottom:0.3rem">{icon}</div>
-            <div style="font-family:'Space Grotesk',sans-serif;font-size:clamp(1.6rem,4vw,2.4rem);
-                        font-weight:800;color:{t['text']};letter-spacing:-0.03em;text-transform:uppercase">{inst['name']}</div>
-            <div style="font-size:0.65rem;font-weight:600;color:{t['muted']};
-                        text-transform:uppercase;letter-spacing:0.1em;margin-top:0.28rem">Top Prediction</div>
-            <div style="font-size:0.9rem;font-weight:700;color:{conf_color};margin-top:0.35rem">{conf_label}</div>
-          </div>
-        </div>
-        {section_label("🔢 Top 3 Predictions", t)}
-        <div style="display:flex;gap:0.75rem;flex-wrap:wrap">{pred_cards_html}</div>""",
-        t
-    ), unsafe_allow_html=True)
-
-    # ── QUALITY + CONDITION ──
-    qcol, ccol = st.columns(2)
-    with qcol:
-        q    = res['quality']
-        bars = ""
-        for l, s in q['all_scores'].items():
-            w = l == q['label']
-            col = t['green'] if w else t['muted']
-            fw  = f"color:{t['green']};font-weight:700" if w else f"color:{t['muted']}"
-            bars += (f'<div style="margin-bottom:0.55rem">'
-                     f'<div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:0.18rem">'
-                     f'<span style="{fw};text-transform:capitalize">{"▶ " if w else ""}{l}</span>'
-                     f'<span style="{fw}">{s:.1f}%</span></div>'
-                     f'{prog_bar(s, col, 7, dark)}</div>')
-        q_badge_colors = {'excellent':'#10b981','good':'#3b82f6','fair':'#f59e0b','poor':'#ef4444'}
-        q_bc = q_badge_colors.get(q['label'], t['accent'])
-        st.markdown(card_wrap(
-            card_title("🎚️ Audio Quality", t) +
-            f'<div style="display:flex;flex-direction:column;align-items:center;margin-bottom:1rem">'
-            f'{gauge_svg(q["confidence"], dark, 165, 13, q["label"])}'
-            f'<span style="margin-top:0.55rem;padding:0.25rem 0.85rem;border-radius:999px;'
-            f'background:{q_bc};color:white;font-size:0.7rem;font-weight:700;'
-            f'letter-spacing:0.05em">{q["label"].upper()}</span></div>' + bars,
-            t, "height:100%"
-        ), unsafe_allow_html=True)
-
-    with ccol:
-        cond = res['condition']
-        cs   = cond.get('all_scores', {})
-        ms   = cs.get('modern',0)+cs.get('clean',0)+cs.get('noisy',0)
-        vs   = cs.get('vintage',0)
-        et   = ms+vs or 1
-        mp   = (ms/et)*100; vp = (vs/et)*100
-        im   = ms >= vs
-        nr   = cs.get('noisy',0); cr = cs.get('clean',0); isn = nr > cr
-        sc   = t['red'] if isn else t['green']
-        mc   = '#818cf8' if dark else t['blue']
-
-        sub = ""
-        for l, s, col in [('Clean signal', cr, '#2dd4bf'), ('Noisy signal', nr, '#f87171')]:
-            sub += (f'<div style="display:flex;align-items:center;gap:0.45rem;margin-bottom:0.28rem">'
-                    f'<span style="font-size:0.69rem;color:{t["muted"]};width:80px;flex-shrink:0">{l}</span>'
-                    f'<div style="flex:1">{prog_bar(s, col, 6, dark)}</div>'
-                    f'<span style="font-size:0.69rem;font-weight:700;color:{col};width:32px;text-align:right">{s:.1f}%</span></div>')
-
-        st.markdown(card_wrap(
-            card_title("⏳ Audio Condition", t) +
-            section_label("🕰️ Recording Era", t) +
-            f'<div style="margin-bottom:0.55rem">'
-            f'<div style="display:flex;justify-content:space-between;font-size:0.76rem;margin-bottom:0.18rem">'
-            f'<span style="font-weight:700;color:{mc if im else t["muted"]}">💿 Modern {"✓" if im else ""}</span>'
-            f'<span style="font-weight:800;color:{mc if im else t["muted"]}">{mp:.1f}%</span></div>'
-            f'{prog_bar(mp, mc, 13, dark)}</div>'
-            f'<div style="margin-bottom:1rem">'
-            f'<div style="display:flex;justify-content:space-between;font-size:0.76rem;margin-bottom:0.18rem">'
-            f'<span style="font-weight:700;color:{"#fb923c" if not im else t["muted"]}">🕰️ Vintage {"✓" if not im else ""}</span>'
-            f'<span style="font-weight:800;color:{"#fb923c" if not im else t["muted"]}">{vp:.1f}%</span></div>'
-            f'{prog_bar(vp, "#fb923c", 13, dark)}</div>'
-            + section_label("🔊 Signal Quality", t) +
-            f'<div style="background:{"#1a0c0c" if (isn and dark) else "#0c1a15" if dark else ("#fff1f2" if isn else "#f0fff9")};'
-            f'border:1px solid {"#7f1d1d" if isn else "#064e3b"};border-radius:12px;'
-            f'padding:0.75rem 0.9rem;margin-bottom:0.7rem;display:flex;align-items:center;justify-content:space-between">'
-            f'<div style="display:flex;align-items:center;gap:0.6rem">'
-            f'<span style="font-size:1.15rem">{"📻" if isn else "✨"}</span>'
-            f'<div><p style="font-weight:800;color:{sc};font-size:0.85rem;margin:0">{"Noisy" if isn else "Clean"}</p>'
-            f'<p style="font-size:0.67rem;color:{t["muted"]};margin:0.06rem 0 0">'
-            f'{"Noise/artifacts detected" if isn else "Clear minimal-noise signal"}</p></div></div>'
-            f'<span>{"⚠️" if isn else "✅"}</span></div>' + sub,
-            t, "height:100%"
-        ), unsafe_allow_html=True)
-
-    # ── AUDIO INFO + EXPORTS ──
-    ai = res['audio_info']
-    ic1, ic2, ic3 = st.columns(3)
-    tile_style = f"background:{t['surface2']};border:1px solid {t['border']};border-radius:14px;padding:1rem;text-align:center"
-    for col, emoji, label, val in [
-        (ic1, "⏱️", "Duration", f"{ai['duration']:.2f}s"),
-        (ic2, "〰️", "Sample Rate", f"{ai['sample_rate']} Hz"),
-        (ic3, "💾", "Samples", f"{ai['samples']:,}"),
-    ]:
-        with col:
-            st.markdown(f"""
-<div style="{tile_style}">
-  <div style="font-size:1.1rem;margin-bottom:0.18rem">{emoji}</div>
-  <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.07em;color:{t['muted']};font-weight:600">{label}</div>
-  <div style="font-size:0.94rem;font-weight:800;color:{t['text']};margin-top:0.1rem">{val}</div>
-</div>""", unsafe_allow_html=True)
-
-    st.markdown("<div style='height:0.75rem'></div>", unsafe_allow_html=True)
-    ts = datetime.now().strftime('%Y%m%d_%H%M%S')
-    dl1, dl2 = st.columns(2)
-    with dl1:
-        st.download_button("⬇️  Download JSON",
-            data=json.dumps({k:v for k,v in res.items() if k!='visualizations'}, indent=2),
-            file_name=f"instrunet_{ts}.json", mime="application/json", use_container_width=True)
-    with dl2:
-        st.download_button("📄  Download PDF", data=generate_pdf_bytes(res),
-            file_name=f"instrunet_{ts}.pdf", mime="application/pdf", use_container_width=True)
-
-    # ── VISUALIZATIONS ──
-    st.markdown("<div style='height:0.4rem'></div>", unsafe_allow_html=True)
-    st.markdown(card_wrap(
-        card_title("〰️ Audio Visualizations", t) +
-        f'{section_label("Waveform", t)}'
-        f'<img src="{res["visualizations"]["waveform"]}" style="width:100%;border-radius:12px;border:1px solid {t["border"]};display:block;margin-bottom:1.1rem"/>'
-        f'{section_label("Mel-Spectrogram", t)}'
-        f'<img src="{res["visualizations"]["spectrogram"]}" style="width:100%;border-radius:12px;border:1px solid {t["border"]};display:block"/>',
-        t
-    ), unsafe_allow_html=True)
-
-
-# ─── ENTRY POINT ──────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# ENTRY POINT
+# ─────────────────────────────────────────────────────────────────────────────
 def main():
     init_state()
-    dark = st.session_state.dark_mode
-    t    = get_theme(dark)
+    inject_css()
+
     is_auth = (st.session_state.get("authentication_status") is True
-               or st.session_state.get("auth_status") is True)
-    inject_css(t, is_auth=not is_auth)
+               or st.session_state.auth_status is True)
+
     if is_auth:
-        render_app(t)
+        render_app()
     else:
-        render_auth(t)
+        render_auth()
+
 
 if __name__ == '__main__':
     main()
