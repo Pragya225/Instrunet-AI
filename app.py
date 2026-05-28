@@ -564,13 +564,12 @@ def section_header(emoji: str, title: str, subtitle: str = ""):
 # MAIN APP
 # ─────────────────────────────────────────────────────────────────────────────
 def render_app():
-    # Warm-up model in background
     with st.spinner("🔧  Loading model…"):
         load_model_and_encoder()
 
     # ── TOP BAR ──
     user_name = st.session_state.get('auth_name') or st.session_state.get('name', 'User')
-    col_logo, col_spacer, col_user, col_out = st.columns([2, 5, 2, 1])
+    col_logo, _, col_user, col_out = st.columns([2, 5, 2, 1])
     with col_logo:
         st.markdown(
             "<h2 style='margin:0;padding:.55rem 0;font-size:1.3rem;font-weight:800;"
@@ -587,228 +586,205 @@ def render_app():
         if st.button("Sign out", key="signout"):
             for k in ['auth_status', 'auth_name', 'auth_username',
                       'authentication_status', 'name', 'username', 'logout']:
-                if k in st.session_state:
-                    try:
-                        del st.session_state[k]
-                    except Exception:
-                        pass
+                st.session_state.pop(k, None)
             st.session_state.auth_status = None
             st.rerun()
 
-    st.markdown("<hr style='margin:.2rem 0 1.2rem;border:none;border-top:1px solid #E8E6E1;'>",
-                unsafe_allow_html=True)
-
-    # ── HERO BANNER ──
     st.markdown(
-        "<div style='background:linear-gradient(135deg,#6366F1 0%,#8B5CF6 50%,#A78BFA 100%);"
-        "border-radius:20px;padding:2.2rem 2.4rem 2rem;margin-bottom:1.6rem;'>"
-        "<h1 style='color:#FFFFFF;font-size:2.2rem;font-weight:800;margin:0 0 .4rem;"
-        "letter-spacing:-.03em;'>Instrument Recognition</h1>"
-        "<p style='color:rgba(255,255,255,.8);font-size:.95rem;margin:0 0 1rem;'>"
-        "Upload an audio clip — the multi-task CNN identifies the instrument, "
-        "grades recording quality, and classifies condition.</p>"
-        "<div style='display:flex;gap:.5rem;flex-wrap:wrap;'>"
-        "<span style='background:rgba(255,255,255,.18);color:#fff;border-radius:999px;"
-        "padding:.25rem .9rem;font-size:.72rem;font-weight:700;letter-spacing:.05em;"
-        "text-transform:uppercase;'>🎸 Instrument</span>"
-        "<span style='background:rgba(255,255,255,.18);color:#fff;border-radius:999px;"
-        "padding:.25rem .9rem;font-size:.72rem;font-weight:700;letter-spacing:.05em;"
-        "text-transform:uppercase;'>⭐ Quality</span>"
-        "<span style='background:rgba(255,255,255,.18);color:#fff;border-radius:999px;"
-        "padding:.25rem .9rem;font-size:.72rem;font-weight:700;letter-spacing:.05em;"
-        "text-transform:uppercase;'>🎞️ Condition</span>"
-        "<span style='background:rgba(255,255,255,.18);color:#fff;border-radius:999px;"
-        "padding:.25rem .9rem;font-size:.72rem;font-weight:700;letter-spacing:.05em;"
-        "text-transform:uppercase;'>🧠 Multi-task CNN</span>"
-        "</div></div>",
+        "<hr style='margin:.2rem 0 0;border:none;border-top:1px solid #E8E6E1;'>",
         unsafe_allow_html=True,
     )
 
-    # ── TWO COLUMN LAYOUT ──
-    left_col, right_col = st.columns([1.15, 1], gap="large")
+    # ── HERO ──
+    st.markdown(
+        "<div style='background:linear-gradient(135deg,#6366F1 0%,#8B5CF6 60%,#A78BFA 100%);"
+        "border-radius:0 0 24px 24px;padding:2.4rem 2.4rem 2rem;margin-bottom:2rem;'>"
+        "<h1 style='color:#fff;font-size:2rem;font-weight:800;margin:0 0 .35rem;"
+        "letter-spacing:-.03em;text-align:center;'>🎵 Instrument Recognition</h1>"
+        "<p style='color:rgba(255,255,255,.75);font-size:.9rem;margin:0 auto 1.1rem;"
+        "text-align:center;max-width:520px;'>"
+        "Upload an audio clip — the multi-task CNN identifies the instrument, "
+        "grades quality, and classifies recording condition.</p>"
+        "<div style='display:flex;gap:.45rem;flex-wrap:wrap;justify-content:center;'>"
+        + "".join(
+            f"<span style='background:rgba(255,255,255,.18);color:#fff;border-radius:999px;"
+            f"padding:.22rem .85rem;font-size:.7rem;font-weight:700;letter-spacing:.05em;"
+            f"text-transform:uppercase;'>{t}</span>"
+            for t in ["🎸 Instrument", "⭐ Quality", "🎞️ Condition", "🧠 Multi-task CNN"]
+        )
+        + "</div></div>",
+        unsafe_allow_html=True,
+    )
 
-    # ────────────────── LEFT — UPLOAD & PLAYBACK ──────────────────
-    with left_col:
-        section_header("📁", "Upload Audio",
-                        "WAV · MP3 · OGG · FLAC  —  first 3 seconds are analysed")
-
+    # ── UPLOAD ZONE — narrow centred column ──
+    _, mid, _ = st.columns([1, 2.2, 1])
+    with mid:
         af = st.file_uploader(
-            "Drag & drop or click to browse",
+            "Drop your audio file here  ·  WAV · MP3 · OGG · FLAC",
             type=['wav', 'mp3', 'ogg', 'flac', 'm4a'],
-            label_visibility='collapsed',
         )
 
         if af:
             st.audio(af, format=af.type)
-            c1, c2, c3 = st.columns(3)
-            c1.metric("File", af.name[:18] + ("…" if len(af.name) > 18 else ""))
-            c2.metric("Size", f"{af.size / 1024:.1f} KB")
-            c3.metric("Type", af.type.split('/')[-1].upper())
-            st.success(f"✅  **{af.name}** ready to analyse")
+            fi1, fi2, fi3 = st.columns(3)
+            fi1.metric("📄 File", af.name[:16] + ("…" if len(af.name) > 16 else ""))
+            fi2.metric("💾 Size",  f"{af.size / 1024:.1f} KB")
+            fi3.metric("🎵 Type", af.type.split('/')[-1].upper())
 
         st.markdown("<br>", unsafe_allow_html=True)
+        go = st.button(
+            "🔍  Analyse Audio",
+            disabled=af is None,
+            use_container_width=True,
+            type="primary",
+        )
 
-        col_btn, _ = st.columns([1, 1.5])
-        with col_btn:
-            go = st.button(
-                "🔍  Analyse Audio",
-                disabled=af is None,
-                use_container_width=True,
-                type="primary",
-            )
+    if go and af:
+        with st.spinner("🎵  Analysing your audio — hang tight…"):
+            model, le = load_model_and_encoder()
+            result = predict_audio(af.read(), model, le)
+        st.session_state.result = result
+        st.rerun()
 
-        if go and af:
-            with st.spinner("🎵  Analysing your audio…"):
-                model, le = load_model_and_encoder()
-                result = predict_audio(af.read(), model, le)
-            st.session_state.result = result
-            st.rerun()
-
-        # ── PREVIOUS RESULT SUMMARY in left col ──
-        if st.session_state.result:
-            res = st.session_state.result
-
-            st.markdown("<br>", unsafe_allow_html=True)
-            section_header("📊", "Audio Info")
-
-            ai = res['audio_info']
-            m1, m2, m3 = st.columns(3)
-            m1.metric("⏱ Duration",    f"{ai['duration']:.2f} s")
-            m2.metric("🔊 Sample Rate", f"{ai['sample_rate']:,} Hz")
-            m3.metric("📦 Samples",     f"{ai['samples'] // 1000}k")
-
-            st.markdown("<br>", unsafe_allow_html=True)
-            section_header("💾", "Export Results")
-
-            ts = datetime.now().strftime('%Y%m%d_%H%M%S')
-            dl1, dl2 = st.columns(2)
-            with dl1:
-                st.download_button(
-                    "⬇️ JSON",
-                    data=json.dumps(
-                        {k: v for k, v in res.items()
-                         if not k.endswith('_fig')},
-                        indent=2,
-                    ),
-                    file_name=f"instrunet_{ts}.json",
-                    mime="application/json",
-                    use_container_width=True,
-                )
-            with dl2:
-                st.download_button(
-                    "⬇️ PDF Report",
-                    data=generate_pdf(res),
-                    file_name=f"instrunet_{ts}.pdf",
-                    mime="application/pdf",
-                    use_container_width=True,
-                )
-
-    # ────────────────── RIGHT — RESULTS ──────────────────
-    with right_col:
-        if not st.session_state.result:
-            # Empty state
+    # ── RESULTS SECTION — only shown after analysis ──
+    if not st.session_state.result:
+        st.markdown("<br>", unsafe_allow_html=True)
+        _, emp, _ = st.columns([1, 2, 1])
+        with emp:
             st.markdown(
-                "<div style='text-align:center;padding:3.5rem 1rem;border:2px dashed #D1D5DB;"
+                "<div style='text-align:center;padding:2.5rem 1rem;border:2px dashed #D1D5DB;"
                 "border-radius:16px;background:#F9FAFB;'>"
-                "<p style='font-size:2.5rem;margin-bottom:.5rem;'>🎧</p>"
-                "<p style='font-size:1rem;font-weight:600;color:#374151;margin-bottom:.25rem;'>"
-                "Results appear here</p>"
-                "<p style='color:#9CA3AF;font-size:.85rem;'>"
-                "Upload a file and click Analyse</p>"
+                "<p style='font-size:2.2rem;margin-bottom:.4rem;'>🎧</p>"
+                "<p style='font-size:.95rem;font-weight:600;color:#374151;margin-bottom:.2rem;'>"
+                "Results will appear here</p>"
+                "<p style='color:#9CA3AF;font-size:.82rem;'>"
+                "Upload a file above and click Analyse</p>"
                 "</div>",
                 unsafe_allow_html=True,
             )
-        else:
-            res  = st.session_state.result
-            inst = res['instrument']
-            icon = get_icon(inst['name'])
-            conf = inst['confidence']
+        return   # nothing more to render
 
-            # ── Big instrument result ──
-            conf_color = (
-                "#10B981" if conf >= 80
-                else "#F59E0B" if conf >= 50
-                else "#EF4444"
-            )
-            conf_label = (
-                "High confidence" if conf >= 80
-                else "Moderate" if conf >= 50
-                else "Low confidence"
-            )
+    res  = st.session_state.result
+    inst = res['instrument']
+    icon = get_icon(inst['name'])
+    conf = inst['confidence']
+    conf_color = "#10B981" if conf >= 80 else "#F59E0B" if conf >= 50 else "#EF4444"
+    conf_label = "High confidence" if conf >= 80 else "Moderate confidence" if conf >= 50 else "Low confidence"
 
-            st.markdown(
-                f"<div style='background:#FFFFFF;border:1px solid #E8E6E1;border-radius:16px;"
-                f"padding:1.4rem 1.6rem;margin-bottom:1rem;'>"
-                f"<div style='display:flex;align-items:center;gap:1rem;margin-bottom:1rem;'>"
-                f"<span style='font-size:2.8rem;'>{icon}</span>"
-                f"<div>"
-                f"<p style='font-size:1.6rem;font-weight:800;margin:0;letter-spacing:-.02em;"
-                f"text-transform:capitalize;'>{inst['name']}</p>"
-                f"<p style='margin:0;font-size:.78rem;color:#9CA3AF;text-transform:uppercase;"
-                f"letter-spacing:.06em;font-weight:600;'>Detected Instrument</p>"
-                f"</div>"
-                f"</div>"
-                f"<p style='margin:0;font-size:1rem;font-weight:700;color:{conf_color};'>"
-                f"{conf:.1f}% · {conf_label}</p>"
-                f"<div style='background:#F3F4F6;border-radius:999px;height:8px;margin-top:.5rem;'>"
-                f"<div style='background:{conf_color};border-radius:999px;height:8px;"
-                f"width:{conf:.0f}%;'></div></div>"
-                f"</div>",
-                unsafe_allow_html=True,
-            )
+    st.markdown(
+        "<hr style='margin:1rem 0 1.5rem;border:none;border-top:1px solid #E8E6E1;'>",
+        unsafe_allow_html=True,
+    )
+    section_header("🎯", "Analysis Results")
+    st.markdown("<br>", unsafe_allow_html=True)
 
-            # ── Top 3 instrument chart ──
-            st.pyplot(res['inst_chart_fig'], use_container_width=True)
-            plt.close(res['inst_chart_fig'])
+    # ── ROW 1 — Big instrument card + Top-3 chart ──
+    r1a, r1b = st.columns([1, 1.3], gap="large")
 
-            st.markdown("<br>", unsafe_allow_html=True)
-
-            # ── Quality & Condition side by side ──
-            q_col, c_col = st.columns(2)
-            with q_col:
-                section_header("⭐", "Quality")
-                q = res['quality']
-                q_emoji = QUALITY_EMOJI.get(q['label'], '⚪')
-                pill_cls = f"pill-{q['label']}"
-                st.markdown(
-                    f"<span class='sn-pill {pill_cls}'>{q_emoji} {q['label'].upper()}</span>"
-                    f"<span style='font-size:.8rem;color:#6B7280;'> {q['confidence']:.1f}%</span>",
-                    unsafe_allow_html=True,
-                )
-                st.pyplot(res['qual_chart_fig'], use_container_width=True)
-                plt.close(res['qual_chart_fig'])
-
-            with c_col:
-                section_header("🎞️", "Condition")
-                cond = res['condition']
-                c_emoji = CONDITION_EMOJI.get(cond['label'], '⚪')
-                pill_cls = f"pill-{cond['label']}"
-                st.markdown(
-                    f"<span class='sn-pill {pill_cls}'>{c_emoji} {cond['label'].upper()}</span>"
-                    f"<span style='font-size:.8rem;color:#6B7280;'> {cond['confidence']:.1f}%</span>",
-                    unsafe_allow_html=True,
-                )
-                st.pyplot(res['cond_chart_fig'], use_container_width=True)
-                plt.close(res['cond_chart_fig'])
-
-    # ── VISUALISATIONS — full width below ──
-    if st.session_state.result:
-        res = st.session_state.result
+    with r1a:
         st.markdown(
-            "<hr style='margin:1.5rem 0 1rem;border:none;border-top:1px solid #E8E6E1;'>",
+            f"<div style='background:#FFFFFF;border:1.5px solid #6366F1;border-radius:18px;"
+            f"padding:1.8rem;text-align:center;height:100%;'>"
+            f"<div style='font-size:3.8rem;margin-bottom:.6rem;'>{icon}</div>"
+            f"<p style='font-size:1.9rem;font-weight:800;margin:0 0 .1rem;"
+            f"letter-spacing:-.03em;text-transform:capitalize;color:#111827;'>{inst['name']}</p>"
+            f"<p style='font-size:.75rem;color:#9CA3AF;text-transform:uppercase;"
+            f"letter-spacing:.08em;font-weight:600;margin-bottom:1rem;'>Detected Instrument</p>"
+            f"<p style='font-size:2rem;font-weight:800;color:{conf_color};margin:0;'>"
+            f"{conf:.1f}%</p>"
+            f"<p style='font-size:.78rem;color:{conf_color};font-weight:600;margin:.1rem 0 .9rem;'>"
+            f"{conf_label}</p>"
+            f"<div style='background:#F3F4F6;border-radius:999px;height:10px;'>"
+            f"<div style='background:{conf_color};border-radius:999px;height:10px;"
+            f"width:{min(conf,100):.0f}%;transition:width .6s;'></div></div>"
+            f"</div>",
             unsafe_allow_html=True,
         )
-        section_header("📈", "Visualisations", "Waveform and Mel-Spectrogram of the analysed audio")
 
-        v1, v2 = st.columns(2, gap="medium")
-        with v1:
-            st.markdown("**Waveform**")
-            st.pyplot(res['waveform_fig'], use_container_width=True)
-            plt.close(res['waveform_fig'])
-        with v2:
-            st.markdown("**Mel-Spectrogram**")
-            st.pyplot(res['spectrogram_fig'], use_container_width=True)
-            plt.close(res['spectrogram_fig'])
+    with r1b:
+        section_header("🏆", "Top 3 Predictions")
+        st.pyplot(res['inst_chart_fig'], use_container_width=True)
+        plt.close(res['inst_chart_fig'])
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # ── ROW 2 — Quality · Condition · Audio Info ──
+    r2a, r2b, r2c = st.columns(3, gap="medium")
+
+    with r2a:
+        q        = res['quality']
+        q_emoji  = QUALITY_EMOJI.get(q['label'], '⚪')
+        pill_cls = f"pill-{q['label']}"
+        section_header("⭐", "Quality")
+        st.markdown(
+            f"<span class='sn-pill {pill_cls}'>{q_emoji} {q['label'].upper()}</span>"
+            f"<span style='font-size:.8rem;color:#6B7280;'>&nbsp;{q['confidence']:.1f}%</span>",
+            unsafe_allow_html=True,
+        )
+        st.pyplot(res['qual_chart_fig'], use_container_width=True)
+        plt.close(res['qual_chart_fig'])
+
+    with r2b:
+        cond     = res['condition']
+        c_emoji  = CONDITION_EMOJI.get(cond['label'], '⚪')
+        pill_cls = f"pill-{cond['label']}"
+        section_header("🎞️", "Condition")
+        st.markdown(
+            f"<span class='sn-pill {pill_cls}'>{c_emoji} {cond['label'].upper()}</span>"
+            f"<span style='font-size:.8rem;color:#6B7280;'>&nbsp;{cond['confidence']:.1f}%</span>",
+            unsafe_allow_html=True,
+        )
+        st.pyplot(res['cond_chart_fig'], use_container_width=True)
+        plt.close(res['cond_chart_fig'])
+
+    with r2c:
+        ai = res['audio_info']
+        section_header("📊", "Audio Info")
+        st.metric("⏱ Duration",    f"{ai['duration']:.2f} s")
+        st.metric("🔊 Sample Rate", f"{ai['sample_rate']:,} Hz")
+        st.metric("📦 Samples",     f"{ai['samples'] // 1000}k")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # ── ROW 3 — Waveform + Spectrogram ──
+    section_header("📈", "Visualisations", "Waveform and Mel-Spectrogram of the analysed clip")
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    r3a, r3b = st.columns(2, gap="medium")
+    with r3a:
+        st.markdown("**Waveform**")
+        st.pyplot(res['waveform_fig'], use_container_width=True)
+        plt.close(res['waveform_fig'])
+    with r3b:
+        st.markdown("**Mel-Spectrogram**")
+        st.pyplot(res['spectrogram_fig'], use_container_width=True)
+        plt.close(res['spectrogram_fig'])
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # ── ROW 4 — Export ──
+    section_header("💾", "Export Results")
+    _, ex1, ex2, _ = st.columns([2, 1, 1, 2])
+    ts = datetime.now().strftime('%Y%m%d_%H%M%S')
+    with ex1:
+        st.download_button(
+            "⬇️ Download JSON",
+            data=json.dumps(
+                {k: v for k, v in res.items() if not k.endswith('_fig')},
+                indent=2,
+            ),
+            file_name=f"instrunet_{ts}.json",
+            mime="application/json",
+            use_container_width=True,
+        )
+    with ex2:
+        st.download_button(
+            "⬇️ Download PDF",
+            data=generate_pdf(res),
+            file_name=f"instrunet_{ts}.pdf",
+            mime="application/pdf",
+            use_container_width=True,
+        )
 
     # ── FOOTER ──
     st.markdown(
